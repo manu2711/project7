@@ -1,3 +1,10 @@
-# Project7
-## Final project
-Créer un réseau d'entreprise
+# Project7 (Créer un réseau d'entreprise)
+## Server
+cd server
+npm install
+npm run serve
+
+## Client
+cd client
+npm install
+npm run serve
