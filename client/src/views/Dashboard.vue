@@ -1,26 +1,25 @@
 <template>
   <div id="dashboard">
     <Header />
-    <h1>Dashboard</h1>
-    <!-- <div class="article" v-for="article in articles" :key="article.id">
-      <h2 class="title">{{ article.title }}</h2>
-      <div class="description">{{ article.article }}</div>
-      <div class="date">{{ article.date }}</div>
-    </div> -->
+    <b-container>
+      <h1>Dashboard</h1>
+      <b-row>
+        <b-col class="d-flex flex-column align-items-center">
+          <b-card
+            v-for="article in articles"
+            :key="article.id"
+            :title="article.title"
+            tag="article"
+            style="width: 100%; max-width: 40rem"
+            class="mb-2"
+          >
+            <b-card-text>{{ article.article }}</b-card-text>
 
-    <b-card
-    v-for="article in articles" :key="article.id"
-    :title="article.title"
-    tag="article"
-    style="max-width: 40rem;"
-    class="mb-2"
-  >
-    <b-card-text>
-      {{ article.article }}
-    </b-card-text>
-
-    <b-button href="#" variant="primary">More</b-button>
-  </b-card>
+            <b-button href="#" variant="primary">More</b-button>
+          </b-card>
+        </b-col>
+      </b-row>
+    </b-container>
   </div>
 </template>
 
@@ -44,10 +43,10 @@ export default {
   },
   async mounted() {
     try {
-      const response = await axios.get('http://localhost:3000/api/articles')
-      this.articles = response.data
+      const response = await axios.get("http://localhost:3000/api/articles");
+      this.articles = response.data;
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   }
 };
