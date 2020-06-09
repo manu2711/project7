@@ -1,5 +1,12 @@
 const mariadb = require('mariadb')
 
+const pool = mariadb.createPool({
+  host: 'db-groupomania.cbkgmmwqybsk.eu-west-3.rds.amazonaws.com',
+  user: 'admin',
+  password: 'Groupo2020$',
+  database: 'groupomania'
+})
+
 // Create article
 exports.create = (req, res) => {
   const title = req.body.title
@@ -22,22 +29,14 @@ exports.create = (req, res) => {
 }
 
 // Show all articles
-exports.allArticles = (req, res) => {
-  mariadb
-    .createConnection({
-      host: 'localhost',
-      user: 'root',
-      password: '',
-      database: 'groupo'
-    })
-    .then(conn => {
-      conn.query('SELECT * FROM articles').then(rows => {
-        res.send(rows)
-        conn.end()
-      })
-    })
-    .catch(error => {
-      console.log(error)
-     // throw error
-    })
+exports.allArticles = async (req, res) => {
+// Connection to db which will return the list of all articles
+  try {
+    const conn = await pool.getConnection()
+    const rows = await conn.query('SELECT * FROM articles')
+    res.status(201).send(rows)
+    conn.end()
+  } catch (error) {
+    console.log(error)
+  }
 }
