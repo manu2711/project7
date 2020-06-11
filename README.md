@@ -1,12 +1,15 @@
-# Project7 (Créer un réseau d'entreprise)
-## Server
+# Project 7 (Créer un réseau d'entreprise)
+
+## Installation
+Install and Launch server
 ```
 cd server
 npm install
-npm run serve
+node server
 ```
-
-## Client
-cd client
+Install and Launch client
+```
+cd  client
 npm install
 npm run serve
+```
