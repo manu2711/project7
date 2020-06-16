@@ -14,27 +14,9 @@
         <b-col class="text-left" cols="12" lg="6" style="max-width: 30rem">
           <h3 class="text-center">Login</h3>
 
-          <b-form id="loginForm" @submit.prevent="login">
-            <b-form-group id="email-group">
-              <b-form-input
-                v-model="loginEmail"
-                id="email"
-                type="email"
-                required
-                placeholder="Enter your email"
-              ></b-form-input>
-            </b-form-group>
-            <b-form-group id="password-group">
-              <b-form-input
-                v-model="loginPassword"
-                id="password"
-                type="password"
-                required
-                placeholder="Enter your password"
-              ></b-form-input>
-            </b-form-group>
-            <b-button type="submit" block variant="info">Login</b-button>
-          </b-form>
+          <!-- Login Form -->
+          <LoginForm />
+
           <div class="mt-2 text-center">
             <a href="#" v-b-modal.register-modal>Register</a>
           </div>
@@ -43,26 +25,52 @@
           </b-modal>
         </b-col>
       </b-row>
+
+      <!-- If we are loggedIn, we render all articles -->
       <b-row v-if="isLoggedIn">
-        <b-col>Bienvenue sur le forum Groupomania !</b-col>
+        <b-col class="d-flex flex-column align-items-center">
+          <b-card
+            v-for="article in articles"
+            :key="article.id"
+            :title="article.title"
+            tag="article"
+            style="width: 100%; max-width: 60rem"
+            class="mb-2"
+          >
+            <b-card-text :inner-html.prop="article.article_content | truncate(200)"></b-card-text>
+
+            <b-button :to="articleURL(article.url)" variant="primary">More</b-button>
+            <b-button
+              v-if="isOwner(article.user_id)"
+              class="ml-2"
+              href="#"
+              variant="danger"
+              @click="deleteArticle(article.id)"
+            >Delete</b-button>
+          </b-card>
+        </b-col>
       </b-row>
     </b-container>
   </div>
 </template>
 
 <script>
-// @ is an alias to /src
+// Import components
 import Header from "@/components/Header.vue";
 import RegisterForm from "@/components/RegisterForm.vue";
+import LoginForm from "@/components/LoginForm";
 
-// Depedencies
-// import axios from "axios";
+// Import depedencies
+import axios from 'axios'
+
+
 
 export default {
   name: "Home",
   components: {
     Header,
-    RegisterForm
+    RegisterForm,
+    LoginForm
   },
   computed: {
     isLoggedIn: function() {
@@ -71,26 +79,40 @@ export default {
   },
   data() {
     return {
-      loginEmail: "",
-      loginPassword: ""
-    };
+      articles: [],
+      articleTitle: "",
+      articleContent: "",
+      userId: this.$store.state.user.id
+    }
   },
   methods: {
-    // Login Function
-    login: function() {
-      const data = {
-        email: this.loginEmail,
-        password: this.loginPassword
-      };
-      this.$store
-        .dispatch("login", data)
-        .then(() => this.$router.push("/dashboard"))
-        .catch(error => {
-          console.log(error);
-          this.$router.push("/");
-        });
+    isOwner: function(articleOwner) {
+      if (articleOwner == this.userId) return true;
+    },
+    articleURL: function(articleURL) {
+      return `/articles/${articleURL}`
+    },
+    deleteArticle: async function (articleId) {
+      try {
+        axios.delete(`http://localhost:3000/api/articles/${articleId}`)
+        .then((response) => {
+          console.log(response.data)
+          this.$router.go()
+          })
+        
+      } catch (error) {
+        console.log(error)
+      }
     }
-  }
+  },
+  async mounted() {
+    try {
+      const response = await axios.get("http://localhost:3000/api/articles");
+      this.articles = response.data;
+    } catch (error) {
+      console.log(error);
+    }
+  },
 };
 </script>
 
