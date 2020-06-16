@@ -14,7 +14,7 @@
 
         <!-- Right aligned nav items -->
         <b-navbar-nav class="ml-auto">
-          <b-nav-item v-if="isLoggedIn" href="#">{{this.$store.getters.userName}}</b-nav-item>
+          <b-nav-item v-if="isLoggedIn" :to="profile(this.$store.getters.userId)">{{this.$store.getters.userName}}</b-nav-item>
           <b-nav-item v-if="isLoggedIn" href="#" @click="logout">Logout</b-nav-item>
         </b-navbar-nav>
       </b-collapse>
@@ -34,8 +34,11 @@ export default {
     logout: function() {
       this.$store.dispatch("logout").then(() => {
         this.$router.push("/");
-      });
-    }
+      })
+    },
+    profile: function(id) {
+      return `/profile/${id}`
+    },
   }
 };
 </script>
