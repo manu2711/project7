@@ -65,13 +65,11 @@ exports.editArticle = async (req, res) => {
     const id = req.params.id
     const { title, content } = req.body
     const url = Math.round(Math.random() * 1000000) + '-' + title.toLowerCase().split(' ').join('-')
-    console.log(id)
 
     const conn = await pool.getConnection()
-    const rows = await conn.query(
+    await conn.query(
       `UPDATE articles SET title='${title}', content='${content}', url='${url}' WHERE id='${id}'`
     )
-    console.log(rows)
     res.status(200).json({ message: 'Your article has been updated !'})
   } catch (error) {
     res.status(500).json({ error })
