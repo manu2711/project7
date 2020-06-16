@@ -5,13 +5,14 @@ const pool = require('../db_connect')
 exports.newArticle = async (req, res) => {
   try {
     const { title, content, userId } = req.body
+    const revContent = content.split('"').join('\'')
     const url = Math.round(Math.random() * 1000000) + '-' + title.toLowerCase().split(' ').join('-')
     // Connection to Database
     const conn = await pool.getConnection()
 
     // Save new article inside database
     await conn.query(
-      `INSERT INTO articles VALUES (NULL, "${title}", "${content}", NULL, "${userId}", '${url}')`
+      `INSERT INTO articles VALUES (NULL, "${title}", "${revContent}", NULL, "${userId}", '${url}')`
     )
     res
       .status(201)
@@ -29,7 +30,7 @@ exports.allArticles = async (req, res) => {
   try {
     const conn = await pool.getConnection()
     const rows = await conn.query(
-      'SELECT * FROM articles ORDER BY article_date DESC'
+      'SELECT * FROM articles ORDER BY date DESC'
     )
     res.status(200).send(rows)
     conn.end()
@@ -45,7 +46,7 @@ exports.oneArticle = async (req, res) => {
 
     const conn = await pool.getConnection()
     const rows = await conn.query(
-      `SELECT * FROM articles WHERE id='${articleId}'`
+      `SELECT * FROM articles WHERE url='${articleId}'`
     )
 
     if (rows[0] == null) return res.send({ message: 'There is no article with that id !' })
@@ -58,7 +59,25 @@ exports.oneArticle = async (req, res) => {
   }
 }
 
+// Edit an article
+exports.editArticle = async (req, res) => {
+  try {
+    const id = req.params.id
+    const { title, content } = req.body
+    const url = Math.round(Math.random() * 1000000) + '-' + title.toLowerCase().split(' ').join('-')
+    console.log(id)
 
+    const conn = await pool.getConnection()
+    const rows = await conn.query(
+      `UPDATE articles SET title='${title}', content='${content}', url='${url}' WHERE id='${id}'`
+    )
+    console.log(rows)
+    res.status(200).json({ message: 'Your article has been updated !'})
+  } catch (error) {
+    res.status(500).json({ error })
+    console.log(error)
+  }
+}
 
 // Delete an article
 exports.deleteArticle = async (req, res) => {
