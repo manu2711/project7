@@ -66,3 +66,16 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: 'Username or Password invalid' })
   }
 }
+
+exports.delete = async (req, res) => {
+  try {
+    const id = req.params.id
+    const conn = await pool.getConnection()
+    await conn.query(
+      `DELETE FROM users WHERE id='${id}'`
+    )
+    res.status(200).json({ message: 'user deleted' })
+  } catch (error) {
+    res.status(500).json({ error })
+  }
+}
