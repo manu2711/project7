@@ -43,7 +43,7 @@ export default {
       };
       // Dispatch to login action
       this.$store.dispatch("login", loginCredentials)
-        .then(() => this.$router.push("/dashboard"))
+        .then(() => this.$router.go())
         .catch(error => console.log(error));
     }
   }

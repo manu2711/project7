@@ -70,7 +70,8 @@ exports.editArticle = async (req, res) => {
     await conn.query(
       `UPDATE articles SET title='${title}', content='${content}', url='${url}' WHERE id='${id}'`
     )
-    res.status(200).json({ message: 'Your article has been updated !'})
+    res.status(200).json({ message: 'Your article has been updated !' })
+    conn.release()
   } catch (error) {
     res.status(500).json({ error })
     console.log(error)

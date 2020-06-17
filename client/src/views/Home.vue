@@ -37,7 +37,7 @@
             style="width: 100%; max-width: 60rem"
             class="mb-2"
           >
-            <b-card-text :inner-html.prop="article.article_content | truncate(200)"></b-card-text>
+            <b-card-text :inner-html.prop="article.content | truncate(200)"></b-card-text>
 
             <b-button :to="articleURL(article.url)" variant="primary">More</b-button>
             <b-button

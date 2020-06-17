@@ -14,8 +14,8 @@
               class="mb-5 mt-5"
             > 
               <h1>{{article.title}}</h1>
-              <p class="card-subtitle text-muted mb-3">By Emmanuel on 30-03-2020</p>
-              <b-card-text v-html="article.article_content" class="text-justify"></b-card-text>
+              <p class="card-subtitle text-muted mb-3">By Emmanuel on {{ article.date }}</p>
+              <b-card-text v-html="article.content" class="text-justify"></b-card-text>
 
               <b-button href="#" variant="primary">Edit</b-button>
               <b-button href="#" variant="danger" class="ml-3">Delete</b-button>
