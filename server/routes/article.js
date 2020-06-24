@@ -4,6 +4,7 @@ const router = express.Router()
 const articleController = require('../controllers/article.js')
 
 router.post('/', articleController.newArticle)
+router.post('/comments', articleController.newComment)
 router.get('/', articleController.allArticles)
 router.get('/:id', articleController.oneArticle)
 router.put('/:id', articleController.editArticle)

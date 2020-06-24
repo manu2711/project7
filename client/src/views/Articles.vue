@@ -1,35 +1,64 @@
 <template>
-  <div class="home">
+  <div class="articles">
     <Header v-if="isLoggedIn" />
-    <b-container id="main" fluid="lg">
+    <b-container id="main" fluid="lg" style="max-width: 60rem">
       <b-row>
         <b-col class="d-flex justify-content-center">
-          
-            <b-card
-              img-src="https://picsum.photos/600/300/?image=25"
-              img-alt="Image"
-              img-top
-              tag="article"
-              style="width: 100%; max-width: 60rem;"
-              class="mb-5 mt-5"
-            > 
-              <h1>{{article.title}}</h1>
-              <p class="card-subtitle text-muted mb-3">By Emmanuel on {{ article.date }}</p>
-              <b-card-text v-html="article.content" class="text-justify"></b-card-text>
+          <b-card
+            :img-src="article.image_url"
+            img-alt="Image"
+            img-top
+            tag="article"
+            style="width: 100%"
+            class="mb-5 mt-5"
+          >
+            <h1>{{article.title}}</h1>
+            <p class="card-subtitle text-muted mb-3">By {{ article.name }}</p>
+            <b-card-text v-html="article.content" class="text-justify"></b-card-text>
 
-              <b-button href="#" variant="primary">Edit</b-button>
-              <b-button href="#" variant="danger" class="ml-3">Delete</b-button>
-            </b-card>
-          
+            <b-button href="#" variant="primary">Edit</b-button>
+            <b-button href="#" variant="danger" class="ml-3">Delete</b-button>
+          </b-card>
+        </b-col>
+      </b-row>
+      <b-row>
+
+      </b-row>
+      <b-row class="d-flex flex-column align-items-center" >
+        <b-col class="comment">
+          <b-card v-for="comment in comments" :key="comment.id" class="my-2 text-left">
+          <b-card-title>User Name</b-card-title>
+          <b-card-text>{{ comment.content }}</b-card-text>
+        </b-card>
+        </b-col>
+        
+      </b-row>
+      <b-row>
+        <b-col class="mt-5">
+          <b-form-textarea
+            id="comment"
+            v-model="comment"
+            placeholder="What do you think about this article ??"
+            rows="3"
+          ></b-form-textarea>
+          <b-button
+            type="submit"
+            @click.prevent="postComment(article.id)"
+            variant="info"
+            class="mt-2"
+          >Comment !</b-button>
         </b-col>
       </b-row>
     </b-container>
+    <!-- Footer -->
+    <Footer />
   </div>
 </template>
 
 <script>
 // @ is an alias to /src
 import Header from "@/components/Header.vue";
+import Footer from "@/components/Footer.vue";
 import axios from "axios";
 
 // Depedencies
@@ -37,7 +66,8 @@ import axios from "axios";
 export default {
   name: "Home",
   components: {
-    Header
+    Header,
+    Footer
   },
   computed: {
     isLoggedIn: function() {
@@ -46,23 +76,24 @@ export default {
   },
   data() {
     return {
-      article: ""
+      article: "",
+      comment: "",
+      comments: ""
     };
   },
   methods: {
-    // Login Function
-    login: function() {
-      const data = {
-        email: this.loginEmail,
-        password: this.loginPassword
-      };
-      this.$store
-        .dispatch("login", data)
-        .then(() => this.$router.push("/dashboard"))
-        .catch(error => {
-          console.log(error);
-          this.$router.push("/");
-        });
+    postComment: function(articleId) {
+      axios
+        .post("http://localhost:3000/api/articles/comments", {
+          articleId: articleId,
+          userId: this.$store.getters.userId,
+          content: this.comment
+        })
+        .then(response => {
+          console.log(response.data);
+          this.$router.go()
+        })
+        .catch(error => console.log(error));
     }
   },
   async mounted() {
@@ -70,7 +101,9 @@ export default {
       const response = await axios.get(
         `http://localhost:3000/api/articles/${this.$route.params.id}`
       );
-      this.article = response.data[0];
+      this.article = response.data.article[0];
+      this.comments = response.data.comments;
+
     } catch (error) {
       console.log(error);
     }
@@ -79,10 +112,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.home {
+.articles {
   display: flex;
   flex-direction: column;
   height: 90vh;
+  margin-top: 4rem;
 
   #main {
     flex: 1;

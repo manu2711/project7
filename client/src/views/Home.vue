@@ -81,13 +81,12 @@ export default {
     return {
       articles: [],
       articleTitle: "",
-      articleContent: "",
-      userId: this.$store.state.user.id
+      articleContent: ""
     }
   },
   methods: {
     isOwner: function(articleOwner) {
-      if (articleOwner == this.userId) return true;
+      if (articleOwner == this.$store.state.user.id) return true;
     },
     articleURL: function(articleURL) {
       return `/articles/${articleURL}`
@@ -121,6 +120,7 @@ export default {
   display: flex;
   flex-direction: column;
   height: 90vh;
+  margin-top: 4rem;
 
   #main {
     flex: 1;

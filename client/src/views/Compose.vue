@@ -2,27 +2,52 @@
   <div id="compose">
     <Header />
     <b-container>
-      <h2>Ecrit un nouvel article !</h2>
+      <h1>Ecrit un nouvel article !</h1>
       <b-row class="d-flex flex-column align-items-center">
-        <b-col style="max-width: 40rem">
-          <input v-model="title" type="text" name="title" placeholder="Title" />
-
-          <!-- Implemet QUill Editor -->
-          <quill-editor
-            ref="myQuillEditor"
-            v-model="content"
-            :options="editorOption"
-          />
-					<b-button type="submit" variant="info" @click.prevent="newArticle">Create my article !</b-button>
+        <b-col style="max-width: 60rem">
+          <form enctype="multipart/form-data" @submit.prevent="newArticle">
+            <div v-if="imagePreview">
+              <img :src="imagePreview" class="figure-img img-fluid" alt="Profile picture" />
+            </div>
+            
+              <b-button variant="primary" @click="pickFile">Choose article's image</b-button>
+              <input
+                type="file"
+                @change="imageSelected"
+                class="custom-file-input"
+                id="customFile"
+                style="display: none"
+                ref="fileInput"
+              />
+              <h2 class="mt-5">- Choose your title -</h2>
+              <b-form-input
+              v-model="title"
+              type="text"
+              name="title"
+              placeholder="Give your article a nice title here..."
+              class="my-2"
+            ></b-form-input>
+            
+            <h2 class="mt-5">- Write a good content -</h2>
+            
+            <!-- Implemet QUill Editor -->
+            <quill-editor ref="myQuillEditor" v-model="content" :options="editorOption"></quill-editor>
+            
+            
+            
+            <b-button class="mt-2" type="submit" variant="info">Create my article !</b-button>
+          </form>
         </b-col>
       </b-row>
     </b-container>
+    <Footer />
   </div>
 </template>
 
 <script>
 // Components
 import Header from "@/components/Header.vue";
+import Footer from "@/components/Footer.vue";
 
 // Depedencies
 import axios from "axios";
@@ -30,23 +55,25 @@ import axios from "axios";
 export default {
   name: "Compose",
   components: {
-    Header
+    Header, Footer
   },
   data() {
     return {
-			title: '',
+      title: "",
       userId: this.$store.state.user.id,
-			content: '',
-			
+      content: "",
+      image: "",
+      imagePreview: "",
+
       editorOption: {
         placeholder: "Please enter your content here",
         modules: {
           toolbar: {
             container: [
               ["bold", "italic", "underline", "strike"],
-              [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-							[{ 'header': [2, 3, 4, false] }],
-							['clean']
+              [{ list: "ordered" }, { list: "bullet" }],
+              [{ header: [2, 3, 4, false] }],
+              ["clean"]
             ]
           },
           history: {
@@ -58,32 +85,49 @@ export default {
       }
     };
   },
-
   methods: {
+    pickFile: function() {
+      this.$refs.fileInput.click();
+    },
     isOwner: function(articleOwner) {
       if (articleOwner == this.userId) return true;
     },
-    newArticle: function() {
-      let article = {
-        title: this.title,
-        content: this.content,
-        userId: this.userId
+    imageSelected(event) {
+      this.image = event.target.files[0];
+
+      const reader = new FileReader();
+      reader.readAsDataURL(this.image);
+      reader.onload = event => {
+        this.imagePreview = event.target.result;
       };
-      axios
-        .post("http://localhost:3000/api/articles", {
-          title: article.title,
-          content: article.content,
-          userId: article.userId
-        })
-        .then(response => {
-          console.log(response.data);
-          this.$router.push('/');
-        })
-        .catch(error => console.log(error));
     },
-    // Quill editor methods
-    
-    
+    async newArticle () {
+      const formData = new FormData()
+      formData.append('cover', this.image)
+      formData.append('title', this.title)
+      formData.append('content', this.content)
+      formData.append('userId', this.userId)
+      
+      try {
+        const postResponse = await axios.post('http://localhost:3000/api/articles', formData)
+        console.log(postResponse)
+        this.$router.push('/')
+
+      } catch (error) {
+        console.log(error)
+      }
+    }
   }
 };
 </script>
+
+<style lang="scss">
+#compose {
+  margin-top: 4rem;
+}
+
+.ql-editor{
+  min-height: 10rem;
+  font-size: 1rem;
+}
+</style>
