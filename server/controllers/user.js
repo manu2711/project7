@@ -15,7 +15,8 @@ aws.config.update({
 // Handle register requests
 exports.register = async (req, res) => {
   const { name, email, password } = req.body
-  const avatar = 'https://manu2711groupomania.s3.eu-west-3.amazonaws.com/avatar/default.png'
+  const avatar =
+    'https://manu2711groupomania.s3.eu-west-3.amazonaws.com/avatar/default.png'
   try {
     // Connection to Database
     const conn = await pool.getConnection()
@@ -92,10 +93,43 @@ exports.profile = async (req, res) => {
     )
 
     const user = await conn.query(
-      `SELECT users.name, users.avatar_url FROM users WHERE id=${userId}`
+      `SELECT users.name, users.email, users.avatar_url  FROM users WHERE id=${userId}`
     )
     res.status(200).json({ articles, user })
     conn.release()
+  } catch (error) {
+    res.status(500).json({ error })
+  }
+}
+
+// Update user account
+exports.updateAccount = async (req, res) => {
+  try {
+    const { name, email } = req.body
+    console.log(name, email)
+    const userId = req.params.id
+    const conn = await pool.getConnection()
+    await conn.query(`UPDATE users SET name='${name}', email='${email}' WHERE id='${userId}'`)
+    conn.release()
+    res.status(200).json({ message: 'Trying to update !' })
+  } catch (error) {
+    res.status(500).json({ error })
+  }
+}
+
+// Update user password
+exports.updatePassword = async (req, res) => {
+  try {
+    const { password, confirmPassword } = req.body
+    const userId = req.params.id
+    console.log(password, confirmPassword)
+    if (password && confirmPassword && password === confirmPassword) {
+      const hashedPassword = await bcrypt.hash(password, 10)
+      const conn = await pool.getConnection()
+      await conn.query(`UPDATE users SET password='${hashedPassword}' WHERE id='${userId}'`)
+      conn.release()
+      res.status(200).json({ message: 'Password update !' })
+    } else res.status(400).json({ message: 'passwords do not match' })
   } catch (error) {
     res.status(500).json({ error })
   }
@@ -113,8 +147,7 @@ exports.delete = async (req, res) => {
   }
 }
 
-// Update the user avatar
-
+// Update user avatar
 const storage = multer.diskStorage({
   destination: function (req, file, callback) {
     callback(null, './uploads/avatars')
@@ -136,12 +169,14 @@ exports.avatar = [
         .resize(200)
         .toBuffer()
 
-      const s3res = await s3.upload({
-        Bucket: 'manu2711groupomania/avatar',
-        Key: `${Date.now() + '-' + req.file.originalname}`,
-        Body: buffer,
-        ACL: 'public-read'
-      }).promise()
+      const s3res = await s3
+        .upload({
+          Bucket: 'manu2711groupomania/avatar',
+          Key: `${Date.now() + '-' + req.file.originalname}`,
+          Body: buffer,
+          ACL: 'public-read'
+        })
+        .promise()
 
       const conn = await pool.getConnection()
 
