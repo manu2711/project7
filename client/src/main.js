@@ -13,6 +13,7 @@ import 'quill/dist/quill.core.css' // import styles
 import 'quill/dist/quill.snow.css' // for snow theme
 import 'quill/dist/quill.bubble.css' // for bubble theme
 
+
 const VueTruncate = require('vue-truncate-filter')
 
 Vue.use(BootstrapVue)
@@ -27,8 +28,18 @@ if (token) {
   Vue.prototype.$http.defaults.headers.common.Authorization = token
 }
 
+Axios.interceptors.response.use(response => {
+  return response
+}, error => {
+  if(error.response.status === 401) {
+    store.dispatch('logout')
+  }
+  return Promise.reject(error)
+})
+
+
 new Vue({
   router,
   store,
-  render: h => h(App)
+  render: h => h(App),
 }).$mount('#app')
