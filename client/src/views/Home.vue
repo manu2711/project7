@@ -39,7 +39,7 @@
           >
             <b-card-text :inner-html.prop="article.content | truncate(200)"></b-card-text>
 
-            <b-button :to="articleURL(article.url)" variant="primary">More</b-button>
+            <b-button :to="articleURL(article.id)" variant="primary">More</b-button>
             <b-button
               v-if="isOwner(article.user_id)"
               class="ml-2"
@@ -106,7 +106,7 @@ export default {
   },
   async mounted() {
     try {
-      const response = await axios.get("http://localhost:3000/api/articles");
+      const response = await axios.get("http://localhost:3000/api/articles", this.$store.state.user.id);
       this.articles = response.data;
     } catch (error) {
       console.log(error);

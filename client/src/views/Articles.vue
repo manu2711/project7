@@ -16,22 +16,19 @@
             <p class="card-subtitle text-muted mb-3">By {{ article.name }}</p>
             <b-card-text v-html="article.content" class="text-justify"></b-card-text>
 
-            <b-button href="#" variant="primary">Edit</b-button>
+            <b-button href="#" variant="primary" :to="editRoute(article.id)">Edit</b-button>
             <b-button href="#" variant="danger" class="ml-3">Delete</b-button>
           </b-card>
         </b-col>
       </b-row>
-      <b-row>
-
-      </b-row>
-      <b-row class="d-flex flex-column align-items-center" >
+      <b-row></b-row>
+      <b-row class="d-flex flex-column align-items-center">
         <b-col class="comment">
           <b-card v-for="comment in comments" :key="comment.id" class="my-2 text-left">
-          <b-card-title>User Name</b-card-title>
-          <b-card-text>{{ comment.content }}</b-card-text>
-        </b-card>
+            <b-card-title>User Name</b-card-title>
+            <b-card-text>{{ comment.content }}</b-card-text>
+          </b-card>
         </b-col>
-        
       </b-row>
       <b-row>
         <b-col class="mt-5">
@@ -91,9 +88,12 @@ export default {
         })
         .then(response => {
           console.log(response.data);
-          this.$router.go()
+          this.$router.go();
         })
         .catch(error => console.log(error));
+    },
+    editRoute(id){
+      return `/edit/${id}`
     }
   },
   async mounted() {
@@ -103,7 +103,6 @@ export default {
       );
       this.article = response.data.article[0];
       this.comments = response.data.comments;
-
     } catch (error) {
       console.log(error);
     }

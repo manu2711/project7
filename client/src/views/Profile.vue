@@ -126,28 +126,29 @@
 
       <!-- Liste de tous les articles publiés par l'utilisateur -->
       <b-row class="d-flex justify-content-center">
-        <h2>Liste de mes articles</h2>
+        <h2>List of all my articles</h2>
       </b-row>
       <b-row>
         <b-col
           cols="12"
           v-if="!articles"
         >You did not publish any articles... let's start publishing !</b-col>
-        <b-col cols="12" class="d-flex flex-row justify-content-around">
+        <b-col cols="12" class="d-lg-flex flex-row flex-wrap justify-content-around">
           <b-card
             :title="article.title"
             :img-src="article.image_url"
             img-alt="Image"
             img-top
             border-variant="secondary"
-            style="max-width: 20rem;"
+            style="max-width: 20rem; min-width: 15rem"
             class="mt-4"
             v-for="article in articles"
             :key="article.id"
           >
-            <b-card-text></b-card-text>
-            <b-button variant="info">Edit</b-button>
-            <b-button variant="danger" class="ml-3">Delete</b-button>
+            <b-card-text class="d-flex flex-row justify-content-center">
+              <b-button variant="info" size="sm" :to="editRoute(article.id)">Edit</b-button>
+            <DeleteArticleButton class="ml-3" :articleId="article.id"/>
+            </b-card-text>
           </b-card>
         </b-col>
       </b-row>
@@ -162,6 +163,7 @@
 // @ is an alias to /src
 import Header from "@/components/Header.vue";
 import Footer from "@/components/Footer.vue";
+import DeleteArticleButton from "@/components/DeleteArticleButton.vue"
 import axios from "axios";
 
 // Depedencies
@@ -170,7 +172,8 @@ export default {
   name: "Profile",
   components: {
     Header,
-    Footer
+    Footer,
+    DeleteArticleButton
   },
   computed: {
     isLoggedIn: function() {
@@ -203,12 +206,12 @@ export default {
       reader.onload = event => {
         this.avatarPreview = event.target.result;
       };
-
+      
       const formData = new FormData();
       formData.append("avatar", this.avatar);
       axios
         .post(
-          `http://localhost:3000/api/users/profile/${this.$route.params.id}/avatar`,
+          `http://localhost:3000/api/users/profile/${this.$store.state.user.id}/avatar`,
           formData
         )
         .then(() => console.log("Avatar has changed"))
@@ -216,7 +219,7 @@ export default {
     },
     async editAccount(){
       try {
-        const response = await axios.put(`http://localhost:3000/api/users/account/${this.$route.params.id}`,{
+        const response = await axios.put(`http://localhost:3000/api/users/account/${this.$store.state.user.id}`,{
           name: this.user.name,
           email: this.user.email
         })
@@ -238,7 +241,7 @@ export default {
       }
       try {
         
-      const response = await axios.put(`http://localhost:3000/api/users/password/${this.$route.params.id}`,{
+      const response = await axios.put(`http://localhost:3000/api/users/password/${this.$store.state.user.id}`,{
           password: this.password,
           confirmPassword: this.confirmPassword
         })
@@ -261,12 +264,15 @@ export default {
       } catch (error) {
         console.log(error);
       }
+    },
+    editRoute(id){
+      return `/edit/${id}`
     }
   },
   async mounted() {
     try {
       const response = await axios.get(
-        `http://localhost:3000/api/users/profile/${this.$route.params.id}`
+        `http://localhost:3000/api/users/profile/${this.$store.state.user.id}`
       );
       this.articles = response.data.articles;
       this.user = response.data.user[0];

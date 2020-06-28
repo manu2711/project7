@@ -1,21 +1,22 @@
 <template>
     <div>
         <b-button
-            variant="danger"
-            @click="deleteArticle(articleId)"
-        >Delete</b-button>
+            variant="info"
+            :to="'/edit/' + articleId"
+            @click="editArticle(articleId)"
+        >Edit</b-button>
     </div>
 </template>
 
 <script>
 import axios from 'axios'
     export default {
-        name: 'DeleteArticle',
+        name: 'EditArticleButton',
         props: {
             articleId: Number
         },
         methods: {
-            deleteArticle: async function (articleId) {
+            editArticle: async function (articleId) {
                 try {
                     axios.delete(`http://localhost:3000/api/articles/${articleId}`)
                     .then((response) => {

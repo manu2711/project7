@@ -8,6 +8,7 @@ const app = express()
 // Importations des différentes routes
 const userRoutes = require('./routes/user.js')
 const articleRoutes = require('./routes/article')
+const adminRoutes = require('./routes/admin')
 
 // Middlewares
 app.use(bodyParser.json())
@@ -21,5 +22,6 @@ app.use(cors())
 
 app.use('/api/users', userRoutes)
 app.use('/api/articles', articleRoutes)
+app.use('/api/admin', adminRoutes)
 
 module.exports = app

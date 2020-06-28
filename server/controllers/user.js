@@ -122,7 +122,6 @@ exports.updatePassword = async (req, res) => {
   try {
     const { password, confirmPassword } = req.body
     const userId = req.params.id
-    console.log(password, confirmPassword)
     if (password && confirmPassword && password === confirmPassword) {
       const hashedPassword = await bcrypt.hash(password, 10)
       const conn = await pool.getConnection()

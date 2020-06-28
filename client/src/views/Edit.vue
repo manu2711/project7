@@ -1,11 +1,12 @@
 <template>
-  <div id="compose">
+  <div id="edit">
     <Header />
     <b-container>
-      <h1>Write your article</h1>
+
+        <h1>Edit article</h1>
       <b-row class="d-flex flex-column align-items-center">
         <b-col style="max-width: 60rem">
-          <form enctype="multipart/form-data" @submit.prevent="newArticle">
+          <form enctype="multipart/form-data" @submit.prevent="editArticle">
             <!-- Cover image -->
             <b-form-group label="Image cover" class="text-left">
               <div v-if="imagePreview">
@@ -39,12 +40,12 @@
               <quill-editor ref="myQuillEditor" v-model="content" :options="editorOption"></quill-editor>
             </b-form-group>
 
-            <b-button class="mt-2" type="submit" variant="info">Create my article !</b-button>
+            <b-button class="mt-2" type="submit" variant="info">Update article</b-button>
           </form>
         </b-col>
       </b-row>
     </b-container>
-    <Footer/>
+    <Footer />
   </div>
 </template>
 
@@ -57,7 +58,7 @@ import Footer from "@/components/Footer.vue";
 import axios from "axios";
 
 export default {
-  name: "Compose",
+  name: "Edit",
   components: {
     Header,
     Footer
@@ -69,6 +70,7 @@ export default {
       content: "",
       image: "",
       imagePreview: "",
+      article: '',
 
       editorOption: {
         placeholder: "Please enter your content here",
@@ -106,16 +108,15 @@ export default {
         this.imagePreview = event.target.result;
       };
     },
-    async newArticle() {
+    async editArticle() {
       const formData = new FormData();
       formData.append("cover", this.image);
       formData.append("title", this.title);
       formData.append("content", this.content);
-      formData.append("userId", this.userId);
 
       try {
-        const postResponse = await axios.post(
-          "http://localhost:3000/api/articles",
+        const postResponse = await axios.put(
+          `http://localhost:3000/api/articles/${this.$route.params.id}`,
           formData
         );
         console.log(postResponse);
@@ -123,13 +124,27 @@ export default {
       } catch (error) {
         console.log(error);
       }
+    },
+  },
+  async mounted() {
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/api/articles/edit/${this.$route.params.id}`
+      );
+      const article = response.data[0];
+      this.title = article.title
+      this.content = article.content
+      this.imagePreview = article.image_url
+      console.log(this.article)
+    } catch (error) {
+      console.log(error);
     }
   }
 };
 </script>
 
 <style lang="scss">
-#compose {
+#edit {
   margin-top: 4rem;
 }
 

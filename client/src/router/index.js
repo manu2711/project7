@@ -12,15 +12,33 @@ const routes = [
     component: Home
   },
   {
-    path: '/about',
-    name: 'About',
+    path: '/admin',
+    name: 'Admin',
     component: () =>
-      import(/* webpackChunkName: "about" */ '../views/About.vue')
+      import(/* webpackChunkName: "admin" */ '../views/Admin.vue')
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: () =>
+      import(/* webpackChunkName: "register" */ '../views/Register.vue')
   },
   {
     path: '/compose',
     name: 'Compose',
     component: () => import('../views/Compose.vue'),
+    beforeEnter: (to, from, next) => {
+      if (!store.getters.isLoggedIn) {
+        next('/')
+      } else {
+        next()
+      }
+    }
+  },
+  {
+    path: '/edit/:id',
+    name: 'Edit',
+    component: () => import('../views/Edit.vue'),
     beforeEnter: (to, from, next) => {
       if (!store.getters.isLoggedIn) {
         next('/')
@@ -42,7 +60,7 @@ const routes = [
     }
   },
   {
-    path: '/profile/:id',
+    path: '/profile',
     name: 'Profile',
     component: () => import('../views/Profile.vue'),
     beforeEnter: (to, from, next) => {

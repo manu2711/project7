@@ -14,55 +14,64 @@ aws.config.update({
 
 const upload = multer({ dest: './uploads' })
 
-exports.newArticle = [upload.single('cover'), async (req, res) => {
-  console.log(req.file)
-  console.log(req.body)
-  const s3 = new aws.S3()
-  try {
-    const { title, content, userId } = req.body
-    // const imageUrl = './images/default-article.jpg'
-    const revContent = content.split('"').join('\'')
-    const url = Math.round(Math.random() * 1000000) + '-' + title.toLowerCase().split(' ').join('-')
-    const date = Date.now()
+exports.newArticle = [
+  upload.single('cover'),
+  async (req, res) => {
+    console.log(req.file)
+    console.log(req.body)
+    const s3 = new aws.S3()
+    try {
+      const { title, content, userId } = req.body
+      // const imageUrl = './images/default-article.jpg'
+      const revContent = content.split('"').join("'")
+      const url =
+        Math.round(Math.random() * 1000000) +
+        '-' +
+        title
+          .toLowerCase()
+          .split(' ')
+          .join('-')
+      const date = Date.now()
 
-    const buffer = await sharp(req.file.path)
-      .resize(950)
-      .toBuffer()
+      const buffer = await sharp(req.file.path)
+        .resize(950)
+        .toBuffer()
 
-    const s3res = await s3.upload({
-      Bucket: 'manu2711groupomania/cover',
-      Key: `${Date.now() + '-' + req.file.originalname}`,
-      Body: buffer,
-      ACL: 'public-read'
-    }).promise()
-    // Connection to Database
-    const conn = await pool.getConnection()
+      const s3res = await s3
+        .upload({
+          Bucket: 'manu2711groupomania/cover',
+          Key: `${Date.now() + '-' + req.file.originalname}`,
+          Body: buffer,
+          ACL: 'public-read'
+        })
+        .promise()
+      // Connection to Database
+      const conn = await pool.getConnection()
 
-    // Save new article inside database
-    await conn.query(
-      `INSERT INTO articles VALUES (NULL, "${title}", "${revContent}", "${date}", "${userId}", "${url}", "${s3res.Location}")`
-    )
-    fs.unlink(req.file.path, () => {
-      console.log(s3res.Location)
-    })
-    res
-      .status(201)
-      .send({ message: `Thanks for sharing your new article: ${title} ! avec l'url: ${url}` })
-    conn.release()
-  } catch (error) {
-    res.status(500).json({ error })
-    console.log(error)
+      // Save new article inside database
+      await conn.query(
+        `INSERT INTO articles VALUES (NULL, "${title}", "${revContent}", "${date}", "${userId}", "${url}", "${s3res.Location}")`
+      )
+      fs.unlink(req.file.path, () => {
+        console.log(s3res.Location)
+      })
+      res.status(201).send({
+        message: `Thanks for sharing your new article: ${title} ! avec l'url: ${url}`
+      })
+      conn.release()
+    } catch (error) {
+      res.status(500).json({ error })
+      console.log(error)
+    }
   }
-}]
+]
 
 // Render all articles
 exports.allArticles = async (req, res) => {
   // Connection to db which will return the list of all articles
   try {
     const conn = await pool.getConnection()
-    const rows = await conn.query(
-      'SELECT * FROM articles ORDER BY date DESC'
-    )
+    const rows = await conn.query('SELECT * FROM articles ORDER BY date DESC')
     res.status(200).send(rows)
     conn.end()
   } catch (error) {
@@ -74,16 +83,16 @@ exports.allArticles = async (req, res) => {
 exports.oneArticle = async (req, res) => {
   try {
     const articleId = req.params.id
-    console.log(articleId)
     const conn = await pool.getConnection()
     const article = await conn.query(`
     SELECT articles.*, users.name FROM articles
     INNER JOIN users
     ON articles.user_id = users.id
-    WHERE url="${articleId}"
+    WHERE articles.id="${articleId}"
     `)
-    if (article[0] == null) return res.send({ message: 'There is no article with that id !' })
-
+    if (article[0] == null) {
+      return res.send({ message: 'There is no article with that id !' })
+    }
     const comments = await conn.query(`
     SELECT comments.content FROM comments
     INNER JOIN articles
@@ -98,24 +107,44 @@ exports.oneArticle = async (req, res) => {
   }
 }
 
-// Edit an article
-exports.editArticle = async (req, res) => {
+// Render article to edit
+exports.articleToEdit = async (req, res) => {
   try {
-    const id = req.params.id
-    const { title, content } = req.body
-    const url = Math.round(Math.random() * 1000000) + '-' + title.toLowerCase().split(' ').join('-')
-
+    // const articleId = req.params.id
     const conn = await pool.getConnection()
-    await conn.query(
-      `UPDATE articles SET title='${title}', content='${content}', url='${url}' WHERE id='${id}'`
+    const row = await conn.query(
+      `SELECT * FROM articles WHERE id=${req.params.id} `
     )
-    res.status(200).json({ message: 'Your article has been updated !' })
+    res.status(200).send(row)
     conn.release()
   } catch (error) {
     res.status(500).json({ error })
     console.log(error)
   }
 }
+
+// Edit an article
+exports.editArticle = [
+  upload.single('cover'),
+  async (req, res) => {
+    try {
+      const articleId = req.params.id
+      const { title, content } = req.body
+      if (!req.file) {
+        const conn = await pool.getConnection()
+        await conn.query(
+          `UPDATE articles SET title='${title}', content="${content}", url='abc' WHERE id='${articleId}'`
+        )
+        res.status(200).json({ message: 'Your article has been updated !' })
+        conn.release()
+      }
+      console.log(req.file)
+    } catch (error) {
+      res.status(500).json({ error })
+      console.log(error)
+    }
+  }
+]
 
 // Delete an article
 exports.deleteArticle = async (req, res) => {
