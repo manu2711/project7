@@ -8,8 +8,7 @@ export default new Vuex.Store({
   state: {
     status: '',
     token: window.localStorage.getItem('token') || null,
-    user: JSON.parse(window.localStorage.getItem('user')) || null,
-    loggedIn: ''
+    user: JSON.parse(window.localStorage.getItem('user')) || null
   },
   mutations: {
     AUTH_REQUEST (state) {
@@ -19,7 +18,6 @@ export default new Vuex.Store({
       state.status = 'success'
       state.token = token
       state.user = user
-      state.loggedIn = true
     },
     AUTH_ERROR (state) {
       state.status = 'error'
@@ -60,26 +58,26 @@ export default new Vuex.Store({
       })
     },
     register ({ commit }, user) {
-      commit('AUTH_REQUEST')
-
-      axios
-        .post('http://localhost:3000/api/users/register', {
-          name: user.name,
-          email: user.email,
-          password: user.password
-        })
-        .then(response => {
-          console.log(response.data)
-        })
-        .catch(error => {
-          console.log(error.response.data.error)
-        })
+      return new Promise((resolve, reject) => {
+        commit('AUTH_REQUEST')
+        axios
+          .post('http://localhost:3000/api/users/register', {
+            name: user.name,
+            email: user.email,
+            password: user.password
+          })
+          .then(response => {
+            resolve(response.data)
+          })
+          .catch(error => {
+            reject(error.response.data.error)
+          })
+      })
     },
     logout ({ commit }) {
       return new Promise(resolve => {
         commit('LOGOUT')
         window.localStorage.clear()
-        delete axios.defaults.headers.common.Authorization
         resolve()
       })
     }
@@ -88,6 +86,13 @@ export default new Vuex.Store({
   getters: {
     isLoggedIn: state => !!state.token,
     authStatus: state => state.status,
+    isAdmin: state => {
+      if (state.user.isAdmin === 'true') {
+        return true
+      } else {
+        return false
+      }
+    },
     userName: state => {
       if (state.user.name) return state.user.name
     },

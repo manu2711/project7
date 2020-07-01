@@ -33,7 +33,7 @@ exports.register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10)
 
     await conn.query(
-      `INSERT INTO users VALUES (NULL, '${name}', '${email}', '${hashedPassword}', '${avatar}')`
+      'INSERT INTO users VALUES (NULL, ?, ?, ?, ?, NULL)', [name, email, hashedPassword, avatar]
     )
     res.status(201).send({ message: `user ${name} has been registered !` })
     conn.release()
@@ -46,9 +46,10 @@ exports.register = async (req, res) => {
 // Handle login requests
 exports.login = async (req, res) => {
   try {
+    console.log(req.headers)
     const conn = await pool.getConnection()
     const rows = await conn.query(
-      `SELECT * FROM users WHERE email= '${req.body.email}'`
+      'SELECT * FROM users WHERE email= ?', [req.body.email]
     )
 
     // Check if login email exists
@@ -65,7 +66,8 @@ exports.login = async (req, res) => {
       res.status(200).json({
         user: {
           name: rows[0].name,
-          id: rows[0].id
+          id: rows[0].id,
+          isAdmin: rows[0].is_admin
         },
         token: jwt.sign({ userId: rows[0].id }, process.env.SECRET_TOKEN, {
           expiresIn: '24h'
@@ -139,6 +141,7 @@ exports.delete = async (req, res) => {
   try {
     const id = req.params.id
     const conn = await pool.getConnection()
+    await conn.query(`UPDATE articles SET user_id='30' WHERE user_id='${id}'`)
     await conn.query(`DELETE FROM users WHERE id='${id}'`)
     res.status(200).json({ message: 'user deleted' })
   } catch (error) {

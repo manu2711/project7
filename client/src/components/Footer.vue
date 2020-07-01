@@ -1,6 +1,6 @@
 <template>
   <div>
-    <b-navbar type="dark" variant="secondary" fixed="bottom" sticky class="mt-5">
+    <b-navbar class="bg mt-5" type="dark" fixed="bottom" sticky>
       <b-navbar-brand to="/">Groupomania</b-navbar-brand>
     </b-navbar>
   </div>
@@ -13,4 +13,8 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.bg {
+  background-color: #091f43;
+  border-top: 6px solid #d1515a
+}
 </style>

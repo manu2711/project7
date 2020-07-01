@@ -40,7 +40,7 @@
 
             <b-button type="submit" variant="primary">Login</b-button>
           </b-form>
-          <p class="mt-2">Not a member yet ? <router-link to="/login">Register</router-link></p>
+          <p class="mt-2">Not a member yet ? <router-link to="/register">Register</router-link></p>
         
       </b-row>
       

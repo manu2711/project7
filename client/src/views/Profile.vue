@@ -1,5 +1,5 @@
 <template>
-  <div class="profile">
+  <div id="profile" class="d-flex flex-column">
     <Header />
     <b-container id="main" fluid="lg">
       <b-row class="my-5">
@@ -48,10 +48,12 @@
                       type="text"
                       required
                       placeholder="Enter your name"
-                      v-model="user.name"
-                      
+                      v-model="$v.user.name.$model"
+                      :state="validateState('name')"
                     ></b-form-input>
+                    <b-form-invalid-feedback>Name is required and must be a least 3 characters</b-form-invalid-feedback>
                   </b-form-group>
+
                   <b-form-group id="email-group">
                     <b-form-input
                       id="email"
@@ -59,8 +61,10 @@
                       type="email"
                       required
                       placeholder="Enter you email"
-                      v-model="user.email"
+                      v-model="$v.user.email.$model"
+                      :state="validateState('email')"
                     ></b-form-input>
+                    <b-form-invalid-feedback>Email is required and must be valid</b-form-invalid-feedback>
                   </b-form-group>
                 </b-form>
                 <b-button type="button" @click="cancelEdit()">Cancel</b-button>
@@ -84,9 +88,12 @@
                       type="password"
                       required
                       placeholder="Enter your new Password"
-                      v-model="password"
+                      v-model="$v.password.$model"
+                      :state="validateState2('password')"
                     ></b-form-input>
+                    <b-form-invalid-feedback>Password is required and must at least 8 characters (special charaters allowed: @/+*!%&.)</b-form-invalid-feedback>
                   </b-form-group>
+
                   <b-form-group id="confirm-password-group">
                     <b-form-input
                       id="confirm-password"
@@ -94,10 +101,11 @@
                       type="password"
                       required
                       placeholder="Confirm your new Password"
-                      v-model="confirmPassword"
+                      v-model="$v.confirmPassword.$model"
+                      :state="validateState2('confirmPassword')"
                     ></b-form-input>
+                    <b-form-invalid-feedback>Passwords must be the same</b-form-invalid-feedback>
                   </b-form-group>
-                  
                 </b-form>
                 <b-alert :show="showPasswordError" variant="danger">{{ passwordError }}</b-alert>
                 <b-button type="button" @click="cancel()">Cancel</b-button>
@@ -106,7 +114,7 @@
             </b-modal>
 
             <!-- Delete Account Modal -->
-            
+
             <b-modal
               id="modal-deleteAccount"
               size="sm"
@@ -131,8 +139,9 @@
       <b-row>
         <b-col
           cols="12"
-          v-if="!articles"
-        >You did not publish any articles... let's start publishing !</b-col>
+        >
+        <p v-if="articles.length==0">You did not publish any articles yet... let's start <router-link to="/compose">composing</router-link> !</p> 
+        </b-col>
         <b-col cols="12" class="d-lg-flex flex-row flex-wrap justify-content-around">
           <b-card
             :title="article.title"
@@ -147,7 +156,7 @@
           >
             <b-card-text class="d-flex flex-row justify-content-center">
               <b-button variant="info" size="sm" :to="editRoute(article.id)">Edit</b-button>
-            <DeleteArticleButton class="ml-3" :articleId="article.id"/>
+              <DeleteArticleButton class="ml-3" :articleId="article.id" />
             </b-card-text>
           </b-card>
         </b-col>
@@ -163,10 +172,18 @@
 // @ is an alias to /src
 import Header from "@/components/Header.vue";
 import Footer from "@/components/Footer.vue";
-import DeleteArticleButton from "@/components/DeleteArticleButton.vue"
+import DeleteArticleButton from "@/components/DeleteArticleButton.vue";
 import axios from "axios";
+import { validationMixin } from "vuelidate";
+import {
+  required,
+  minLength,
+  email,
+  sameAs,
+  helpers
+} from "vuelidate/lib/validators";
 
-// Depedencies
+const passModel = helpers.regex("passModel", /^[a-zA-Z0-9-@/+*!%&.]*$/);
 
 export default {
   name: "Profile",
@@ -175,26 +192,55 @@ export default {
     Footer,
     DeleteArticleButton
   },
-  computed: {
-    isLoggedIn: function() {
-      return this.$store.getters.isLoggedIn;
-    }
-  },
+  mixins: [validationMixin],
   data() {
     return {
       articles: [],
       message: "",
       user: "",
-      userNameBeforeEdit: '',
+      userNameBeforeEdit: "",
       avatar: "",
       avatarPreview: "",
-      password:'',
-      confirmPassword: '',
-      passwordError: '',
+      password: "",
+      confirmPassword: "",
+      passwordError: "",
       showPasswordError: false
     };
   },
+  validations: {
+    user: {
+      name: {
+        required,
+        minLength: minLength(3)
+      },
+      email: {
+        required,
+        email
+      }
+    },
+    password: {
+      required,
+      minLength: minLength(8),
+      passModel
+    },
+    confirmPassword: {
+      sameAsPassword: sameAs("password")
+    }
+  },
+  computed: {
+    isLoggedIn: function() {
+      return this.$store.getters.isLoggedIn;
+    }
+  },
   methods: {
+    validateState(name) {
+      const { $dirty, $error } = this.$v.user[name];
+      return $dirty ? !$error : null;
+    },
+    validateState2(name) {
+      const { $dirty, $error } = this.$v[name];
+      return $dirty ? !$error : null;
+    },
     selectAvatar: function() {
       this.$refs.avatarInput.click();
     },
@@ -206,7 +252,7 @@ export default {
       reader.onload = event => {
         this.avatarPreview = event.target.result;
       };
-      
+
       const formData = new FormData();
       formData.append("avatar", this.avatar);
       axios
@@ -217,41 +263,50 @@ export default {
         .then(() => console.log("Avatar has changed"))
         .catch(error => console.log(error));
     },
-    async editAccount(){
-      try {
-        const response = await axios.put(`http://localhost:3000/api/users/account/${this.$store.state.user.id}`,{
-          name: this.user.name,
-          email: this.user.email
-        })
-        console.log(response.data)
-        this.$bvModal.hide('modal-editAccount')
-      } catch (error) {
-        console.log(error)
-      }
-    },
-    cancelEdit(){
-      this.user.name=this.userNameBeforeEdit
-      this.$bvModal.hide('modal-editAccount')
-    },
-    async changePassword(){
-      if(this.password != this.confirmPassword){
-        this.passwordError = 'Passwords do not match'
-        this.showPasswordError = true
-        return
+    async editAccount() {
+      this.$v.user.$touch();
+      if (this.$v.user.$anyError) {
+        return;
       }
       try {
-        
-      const response = await axios.put(`http://localhost:3000/api/users/password/${this.$store.state.user.id}`,{
-          password: this.password,
-          confirmPassword: this.confirmPassword
-        })
-        console.log(response.data)
-        this.password = ''
-        this.confirmPassword = ''
-        this.showPasswordError = false
-        this.$bvModal.hide('modal-changePassword')
+        const response = await axios.put(
+          `http://localhost:3000/api/users/account/${this.$store.state.user.id}`,
+          {
+            name: this.user.name,
+            email: this.user.email
+          }
+        );
+        console.log(response.data);
+        this.$bvModal.hide("modal-editAccount");
       } catch (error) {
-        console.log(error)
+        console.log(error);
+      }
+    },
+    cancelEdit() {
+      this.user.name = this.userNameBeforeEdit;
+      this.$bvModal.hide("modal-editAccount");
+    },
+    async changePassword() {
+      this.$v.$touch();
+      if (this.$v.$anyError) {
+        return;
+      }
+
+      try {
+        const response = await axios.put(
+          `http://localhost:3000/api/users/password/${this.$store.state.user.id}`,
+          {
+            password: this.password,
+            confirmPassword: this.confirmPassword
+          }
+        );
+        console.log(response.data);
+        this.password = "";
+        this.confirmPassword = "";
+        this.showPasswordError = false;
+        this.$bvModal.hide("modal-changePassword");
+      } catch (error) {
+        console.log(error);
       }
     },
     async deleteUser() {
@@ -265,8 +320,8 @@ export default {
         console.log(error);
       }
     },
-    editRoute(id){
-      return `/edit/${id}`
+    editRoute(id) {
+      return `/edit/${id}`;
     }
   },
   async mounted() {
@@ -276,9 +331,8 @@ export default {
       );
       this.articles = response.data.articles;
       this.user = response.data.user[0];
-      this.userNameBeforeEdit = this.user.name
+      this.userNameBeforeEdit = this.user.name;
       this.avatarPreview = response.data.user[0].avatar_url;
-      
     } catch (error) {
       console.log(error);
     }
@@ -287,11 +341,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.profile {
-  display: flex;
-  flex-direction: column;
-  height: 90vh;
-  margin-top: 4rem;
+#profile {
+  height: 100%;
+  margin-top: 5rem;
 
   #main {
     flex: 1;

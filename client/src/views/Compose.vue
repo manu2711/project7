@@ -1,7 +1,7 @@
 <template>
-  <div id="compose">
+  <div id="compose" class="d-flex flex-column">
     <Header />
-    <b-container>
+    <b-container id="main" fluid="lg">
       <h1>Write your article</h1>
       <b-row class="d-flex flex-column align-items-center">
         <b-col style="max-width: 60rem">
@@ -38,13 +38,13 @@
               <!-- Implemet QUill Editor -->
               <quill-editor ref="myQuillEditor" v-model="content" :options="editorOption"></quill-editor>
             </b-form-group>
-
+            <b-alert variant="danger" :show="errorShow">{{ errorMessage }}</b-alert>
             <b-button class="mt-2" type="submit" variant="info">Create my article !</b-button>
           </form>
         </b-col>
       </b-row>
     </b-container>
-    <Footer/>
+    <Footer />
   </div>
 </template>
 
@@ -69,6 +69,8 @@ export default {
       content: "",
       image: "",
       imagePreview: "",
+      errorMessage: '',
+      errorShow: false,
 
       editorOption: {
         placeholder: "Please enter your content here",
@@ -106,11 +108,24 @@ export default {
         this.imagePreview = event.target.result;
       };
     },
+    // Création de la fonction escapeHTML pour empêcher les injections sql
+
     async newArticle() {
+      if(!this.title | !this.content) {
+        this.errorMessage = 'Please write a title and a content'
+        this.errorShow = true
+        return
+      }
+
+      // Création de la fonction escapeScript pour empêcher les injections script
+      const escapeScript = (text) => {
+        return text.replace(/script/g, '&script;')
+      }
+
       const formData = new FormData();
       formData.append("cover", this.image);
-      formData.append("title", this.title);
-      formData.append("content", this.content);
+      formData.append("title", escapeScript(this.title));
+      formData.append("content", escapeScript(this.content));
       formData.append("userId", this.userId);
 
       try {
@@ -130,7 +145,12 @@ export default {
 
 <style lang="scss">
 #compose {
-  margin-top: 4rem;
+  margin-top: 5rem;
+  height: 100%;
+
+  #main {
+    flex: 1;
+  }
 }
 
 .ql-editor {

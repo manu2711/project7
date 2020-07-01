@@ -1,7 +1,9 @@
 <template>
   <div>
-    <b-navbar toggleable="lg" type="dark" variant="info" fixed="top">
-      <b-navbar-brand to="/">Groupomania</b-navbar-brand>
+    <b-navbar class="bg" toggleable="lg" type="dark" fixed="top">
+      <b-navbar-brand to="/">
+         <img class="logo" src="../assets/images/logo.png" alt="Kitten">
+      </b-navbar-brand>
 
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 
@@ -9,7 +11,7 @@
         <b-navbar-nav>
           <b-nav-item to="/">Home</b-nav-item>
           <b-nav-item to="/compose">Compose</b-nav-item>
-          <b-nav-item to="/admin">Admin</b-nav-item>
+          <b-nav-item v-if="isAdmin" to="/admin">Admin</b-nav-item>
         </b-navbar-nav>
 
         <!-- Right aligned nav items -->
@@ -28,12 +30,15 @@ export default {
   computed: {
     isLoggedIn: function() {
       return this.$store.getters.isLoggedIn;
+    },
+    isAdmin: function(){
+      return this.$store.getters.isAdmin;
     }
   },
   methods: {
     logout: function() {
       this.$store.dispatch("logout").then(() => {
-        this.$router.push("/");
+        this.$router.replace("/login");
       })
     }
   }
@@ -41,4 +46,11 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.logo {
+  max-width: 12rem;
+}
+
+.bg {
+  background-color:#091f43;
+}
 </style>

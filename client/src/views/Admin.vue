@@ -11,7 +11,7 @@
         <!-- All articles -->
         <b-tab title="Articles" active>
           <b-row>
-            <b-table-simple>
+            <b-table-simple responsive>
               <b-thead head-variant="dark">
                 <b-tr>
                   <b-th>Id</b-th>
@@ -24,7 +24,7 @@
                 <b-tr v-for="article in articles" :key="article.id">
                   <b-th>{{ article.id }}</b-th>
                   <b-th class="text-left">
-                    <a href="#" @click="articleLink(article.id)">{{ article.title }}</a>
+                    <router-link :to="articleLink(article.id)">{{article.title}}</router-link>
                      </b-th>
                   <b-th>{{ article.name }}</b-th>
                   <b-th>
@@ -91,7 +91,7 @@ export default {
   },
   methods: {
     articleLink(id) {
-      this.$router.replace(`/articles/${id}`)
+      return `/articles/${id}`
     },
     async adminRight(user){     
       try {
@@ -118,8 +118,8 @@ export default {
 
 <style lang="scss" scoped>
 #admin {
-  margin-top: 4rem;
-  min-height: (85vh);
+  margin-top: 5rem;
+  height: 100%;
 
   #main {
     flex: 1;

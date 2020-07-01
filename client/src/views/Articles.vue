@@ -16,28 +16,43 @@
             <p class="card-subtitle text-muted mb-3">By {{ article.name }}</p>
             <b-card-text v-html="article.content" class="text-justify"></b-card-text>
 
-            <b-button href="#" variant="primary" :to="editRoute(article.id)">Edit</b-button>
-            <b-button href="#" variant="danger" class="ml-3">Delete</b-button>
+            <b-button
+              v-if="isOwner(article.user_id)"
+              href="#"
+              variant="primary"
+              :to="editRoute(article.id)"
+            >Edit</b-button>
+            <b-button
+              v-if="isOwner(article.user_id)"
+              href="#"
+              variant="danger"
+              class="ml-3"
+              @click.prevent="deleteArticle(article.id)"
+            >Delete</b-button>
           </b-card>
         </b-col>
       </b-row>
-      <b-row></b-row>
+
       <b-row class="d-flex flex-column align-items-center">
         <b-col class="comment">
           <b-card v-for="comment in comments" :key="comment.id" class="my-2 text-left">
-            <b-card-title>User Name</b-card-title>
+            <b-card-title>{{ comment.name }}:</b-card-title>
             <b-card-text>{{ comment.content }}</b-card-text>
+            <b-button>Delete comment</b-button>
           </b-card>
         </b-col>
       </b-row>
       <b-row>
-        <b-col class="mt-5">
-          <b-form-textarea
-            id="comment"
-            v-model="comment"
-            placeholder="What do you think about this article ??"
-            rows="3"
-          ></b-form-textarea>
+        <b-col class="mt-3">
+          <b-form-group label="Give a comment" class="text-bold text-left">
+            <b-form-textarea
+              id="comment"
+              v-model="comment"
+              placeholder="What do you think about this article ??"
+              rows="3"
+            ></b-form-textarea>
+          </b-form-group>
+
           <b-button
             type="submit"
             @click.prevent="postComment(article.id)"
@@ -79,7 +94,14 @@ export default {
     };
   },
   methods: {
+    isOwner: function(articleOwner) {
+      if (articleOwner == this.$store.state.user.id) return true;
+    },
     postComment: function(articleId) {
+      this.comments.push({
+        content: this.comment,
+        name: this.$store.state.user.name
+      });
       axios
         .post("http://localhost:3000/api/articles/comments", {
           articleId: articleId,
@@ -88,12 +110,24 @@ export default {
         })
         .then(response => {
           console.log(response.data);
-          this.$router.go();
+          // this.$router.go();
         })
         .catch(error => console.log(error));
     },
-    editRoute(id){
-      return `/edit/${id}`
+    editRoute(id) {
+      return `/edit/${id}`;
+    },
+    deleteArticle: async function(articleId) {
+      try {
+        axios
+          .delete(`http://localhost:3000/api/articles/${articleId}`)
+          .then(response => {
+            console.log(response.data);
+            this.$router.replace("/");
+          });
+      } catch (error) {
+        console.log(error);
+      }
     }
   },
   async mounted() {
