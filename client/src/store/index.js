@@ -27,36 +27,40 @@ export default new Vuex.Store({
     LOGOUT (state) {
       state.status = 'logged out'
       state.token = null
-      state.user = null
+      state.user = {
+        id: '',
+        isAdmin: false,
+        name: ''
+      }
     }
   },
   actions: {
+    // Login in action - sets the token once user is logged in
     login: ({ commit }, user) => {
       return new Promise((resolve, reject) => {
         commit('AUTH_REQUEST')
-
         axios
           .post('http://localhost:3000/api/users/login', {
             email: user.email,
             password: user.password
           })
           .then(result => {
-            // console.log(result)
             const token = result.data.token
             const user = result.data.user
             window.localStorage.setItem('token', `Bearer ${token}`) // Store the token inside localStorage
             window.localStorage.setItem('user', JSON.stringify(user))
             commit('AUTH_SUCCESS', { token, user })
-            // dispatch(user_request)
             resolve(result)
           })
           .catch(error => {
+            console.log(error)
             commit('AUTH_ERROR', error)
             window.localStorage.removeItem('token')
-            reject(error)
+            reject(error.response.data.message)
           })
       })
     },
+    // Register action
     register ({ commit }, user) {
       return new Promise((resolve, reject) => {
         commit('AUTH_REQUEST')
@@ -74,6 +78,7 @@ export default new Vuex.Store({
           })
       })
     },
+    // Logout action
     logout ({ commit }) {
       return new Promise(resolve => {
         commit('LOGOUT')
@@ -89,8 +94,6 @@ export default new Vuex.Store({
     isAdmin: state => {
       if (state.user.isAdmin === 'true') {
         return true
-      } else {
-        return false
       }
     },
     userName: state => {

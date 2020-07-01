@@ -2,7 +2,7 @@
   <div>
     <b-navbar class="bg" toggleable="lg" type="dark" fixed="top">
       <b-navbar-brand to="/">
-         <img class="logo" src="../assets/images/logo.png" alt="Kitten">
+         <img class="logo" src="../assets/images/logo.png" alt="Groupomania logo">
       </b-navbar-brand>
 
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>

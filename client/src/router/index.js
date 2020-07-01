@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Home from '../views/Home.vue'
 import store from '../store'
 
 Vue.use(VueRouter)
@@ -9,7 +8,7 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: Home,
+    component: () => import(/* webpackChunkName: "home" */ '../views/Home.vue'),
     beforeEnter: (to, from, next) => {
       if (!store.getters.isLoggedIn) {
         next('/login')
@@ -22,7 +21,14 @@ const routes = [
     path: '/admin',
     name: 'Admin',
     component: () =>
-      import(/* webpackChunkName: "admin" */ '../views/Admin.vue')
+      import(/* webpackChunkName: "admin" */ '../views/Admin.vue'),
+    beforeEnter: (to, from, next) => {
+      if (!store.getters.isLoggedIn) {
+        next('/')
+      } else {
+        next()
+      }
+    }
   },
   {
     path: '/login',
@@ -53,7 +59,8 @@ const routes = [
   {
     path: '/compose',
     name: 'Compose',
-    component: () => import('../views/Compose.vue'),
+    component: () =>
+      import(/* webpackChunkName: "compose" */ '../views/Compose.vue'),
     beforeEnter: (to, from, next) => {
       if (!store.getters.isLoggedIn) {
         next('/')
@@ -65,7 +72,7 @@ const routes = [
   {
     path: '/edit/:id',
     name: 'Edit',
-    component: () => import('../views/Edit.vue'),
+    component: () => import(/* webpackChunkName: "edit" */ '../views/Edit.vue'),
     beforeEnter: (to, from, next) => {
       if (!store.getters.isLoggedIn) {
         next('/')
@@ -77,7 +84,8 @@ const routes = [
   {
     path: '/articles/:id',
     name: 'Articles',
-    component: () => import('../views/Articles.vue'),
+    component: () =>
+      import(/* webpackChunkName: "articles" */ '../views/Articles.vue'),
     beforeEnter: (to, from, next) => {
       if (!store.getters.isLoggedIn) {
         next('/')
@@ -89,7 +97,8 @@ const routes = [
   {
     path: '/profile',
     name: 'Profile',
-    component: () => import('../views/Profile.vue'),
+    component: () =>
+      import(/* webpackChunkName: "profile" */ '../views/Profile.vue'),
     beforeEnter: (to, from, next) => {
       if (!store.getters.isLoggedIn) {
         next('/')

@@ -6,9 +6,9 @@
     <!-- Main -->
     <b-container id="main" fluid="lg">
       <h1>Administation Page</h1>
-      <b-tabs content-class="mt-3">
 
-        <!-- All articles -->
+      <b-tabs content-class="mt-3">
+        <!-- We render a list of all articles -->
         <b-tab title="Articles" active>
           <b-row>
             <b-table-simple responsive>
@@ -28,14 +28,14 @@
                      </b-th>
                   <b-th>{{ article.name }}</b-th>
                   <b-th>
-                    <DeleteArticleButton class="ml-3" :articleId="article.id"/>
+                    <b-button variant="danger" size="sm" @click.prevent="deleteArticle(article)">Delete</b-button>
                   </b-th>
                 </b-tr>
               </b-tbody>
             </b-table-simple>
           </b-row>
           
-        <!-- All users -->
+        <!-- We render a list of all users -->
         </b-tab>
         <b-tab title="Users">
           <b-row>
@@ -71,17 +71,15 @@
 </template>
 
 <script>
-import Header from "@/components/Header.vue";
-import Footer from "@/components/Footer.vue";
-import DeleteArticleButton from "@/components/DeleteArticleButton.vue"
+import Header from "@/components/Header.vue"
+import Footer from "@/components/Footer.vue"
 import axios from 'axios'
 
 export default {
   name: "Admin",
   components: {
     Header,
-    Footer,
-    DeleteArticleButton
+    Footer
   },
   data() {
     return {
@@ -90,9 +88,11 @@ export default {
     }
   },
   methods: {
+    // Get the link to edit/articleId
     articleLink(id) {
       return `/articles/${id}`
     },
+    // Set admin rights of the user
     async adminRight(user){     
       try {
         axios.put('http://localhost:3000/api/admin',{
@@ -102,8 +102,23 @@ export default {
       } catch (error) {
         console.log(error)
       }
-    }
+    },
+    // Delete an article
+    async deleteArticle(article) {
+      try {
+        axios
+          .delete(`http://localhost:3000/api/articles/${article.id}`)
+          .then(response => {
+            console.log(response.data);
+            const indexArticle = this.articles.indexOf(article);
+            this.articles.splice(indexArticle, 1);
+          });
+      } catch (error) {
+        console.log(error);
+      }
+    },
   },
+  // Load the list of all users and all articles
   async mounted() {
     try {
       const response = await axios.get("http://localhost:3000/api/admin", this.$store.state.user.id);

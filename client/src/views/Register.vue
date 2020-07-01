@@ -1,13 +1,14 @@
 <template>
   <div class="register d-flex flex-column">
     <b-container id="main" fluid="lg" class="d-flex flex-column align-items-center my-5">
+      <!-- Groupomania Logo -->
       <b-row class="d-flex justify-content-center w-100">
         <b-col cols="12">
           <img src="../assets/images/icon-left-font.png" alt="Groupomania icon" />
         </b-col>
       </b-row>
       <b-row class="w-100 d-flex flex-column justify-content-center align-items-center mt-5">
-        
+          <!-- Register Form -->
           <h1>Register</h1>
           <b-form id="registerForm" class="mt-5" @submit.prevent="register">
             <b-form-group>
@@ -95,6 +96,7 @@ export default {
       errorShow: false
     };
   },
+  // Input validation
   validations: {
     name: {
       required,

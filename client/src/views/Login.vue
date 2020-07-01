@@ -1,13 +1,14 @@
 <template>
   <div class="login d-flex flex-column">
     <b-container id="main" fluid="lg" class="d-flex flex-column align-items-center my-5">
+      <!-- Logo Groupomania -->
       <b-row class="d-flex justify-content-center w-100">
         <b-col cols="12">
           <img src="../assets/images/icon-left-font.png" alt="Groupomania icon" />
         </b-col>
       </b-row>
       <b-row class="w-100 d-flex flex-column justify-content-center align-items-center mt-5">
-        
+        <!-- Login Form -->
           <h1>Login</h1>
           <b-form id="loginForm" class="mt-5" @submit.prevent="login">
             <b-form-group>
@@ -45,7 +46,7 @@
       </b-row>
       
     </b-container>
-
+    <!-- Footer -->
     <Footer />
   </div>
 </template>
@@ -54,9 +55,8 @@
 import Footer from "@/components/Footer.vue";
 
 import { validationMixin } from "vuelidate";
-import { required, minLength, email, helpers } from "vuelidate/lib/validators";
+import { required, email } from "vuelidate/lib/validators";
 
-const passModel = helpers.regex("passModel", /^[a-zA-Z0-9-@/+*!%&.]*$/);
 
 export default {
   name: "Register",
@@ -72,15 +72,14 @@ export default {
       errorShow: false
     };
   },
+  // Input validation
   validations: {
     email: {
       required,
       email
     },
     password: {
-      required,
-      minLength: minLength(6),
-      passModel
+      required
     },
   },
   methods: {

@@ -1,7 +1,11 @@
 <template>
   <div class="articles">
-    <Header v-if="isLoggedIn" />
-    <b-container id="main" fluid="lg" style="max-width: 60rem">
+    <!-- Header -->
+    <Header />
+
+    <!-- Main -->
+    <b-container id="main" fluid="lg">
+      <!-- We display the article  -->
       <b-row>
         <b-col class="d-flex justify-content-center">
           <b-card
@@ -9,8 +13,7 @@
             img-alt="Image"
             img-top
             tag="article"
-            style="width: 100%"
-            class="mb-5 mt-5"
+            class="mb-5 mt-5 w-100"
           >
             <h1>{{article.title}}</h1>
             <p class="card-subtitle text-muted mb-3">By {{ article.name }}</p>
@@ -19,12 +22,14 @@
             <b-button
               v-if="isOwner(article.user_id)"
               href="#"
+              size="sm"
               variant="primary"
               :to="editRoute(article.id)"
             >Edit</b-button>
             <b-button
               v-if="isOwner(article.user_id)"
               href="#"
+              size="sm"
               variant="danger"
               class="ml-3"
               @click.prevent="deleteArticle(article.id)"
@@ -33,12 +38,18 @@
         </b-col>
       </b-row>
 
+      <!-- We add the comment section -->
       <b-row class="d-flex flex-column align-items-center">
         <b-col class="comment">
           <b-card v-for="comment in comments" :key="comment.id" class="my-2 text-left">
             <b-card-title>{{ comment.name }}:</b-card-title>
             <b-card-text>{{ comment.content }}</b-card-text>
-            <b-button>Delete comment</b-button>
+            <b-button
+              v-if="isOwner(comment.owner)"
+              variant="danger"
+              size="sm"
+              @click.prevent="deleteComment(comment)"
+            >Delete comment</b-button>
           </b-card>
         </b-col>
       </b-row>
@@ -62,6 +73,7 @@
         </b-col>
       </b-row>
     </b-container>
+
     <!-- Footer -->
     <Footer />
   </div>
@@ -81,11 +93,6 @@ export default {
     Header,
     Footer
   },
-  computed: {
-    isLoggedIn: function() {
-      return this.$store.getters.isLoggedIn;
-    }
-  },
   data() {
     return {
       article: "",
@@ -94,29 +101,51 @@ export default {
     };
   },
   methods: {
-    isOwner: function(articleOwner) {
-      if (articleOwner == this.$store.state.user.id) return true;
+    // Check if the user is the article owner, in order to display action buttons (Edit, Delete)
+    isOwner: function(owner) {
+      if (owner == this.$store.state.user.id || this.$store.getters.isAdmin) return true;
     },
+    // Post comment
     postComment: function(articleId) {
-      this.comments.push({
-        content: this.comment,
-        name: this.$store.state.user.name
-      });
+      const escapeScript = (text) => {
+        return text.replace(/script/g, '&script;')
+      }
       axios
         .post("http://localhost:3000/api/articles/comments", {
           articleId: articleId,
           userId: this.$store.getters.userId,
-          content: this.comment
+          content: escapeScript(this.comment)
         })
         .then(response => {
           console.log(response.data);
-          // this.$router.go();
+          this.comments.push({
+            content: this.comment,
+            name: this.$store.state.user.name,
+            owner: this.$store.state.user.id
+          })
+          this.comment = ""
         })
         .catch(error => console.log(error));
     },
+    // Define the link to /edit/articleId
     editRoute(id) {
       return `/edit/${id}`;
     },
+    // Delete a comment
+    deleteComment: async function(comment) {
+      try {
+        axios
+          .delete(`http://localhost:3000/api/articles/comments/${comment.id}`)
+          .then(response => {
+            console.log(response.data);
+            const indexComment = this.comments.indexOf(comment);
+            this.comments.splice(indexComment, 1);
+          });
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    // Delete an article
     deleteArticle: async function(articleId) {
       try {
         axios
@@ -130,6 +159,7 @@ export default {
       }
     }
   },
+  // Display article and related comments
   async mounted() {
     try {
       const response = await axios.get(
@@ -153,6 +183,7 @@ export default {
 
   #main {
     flex: 1;
+    max-width: 60rem; 
     display: flex;
     flex-direction: column;
     justify-content: center;

@@ -1,10 +1,14 @@
 <template>
   <div id="edit">
+
+    <!-- header -->
     <Header />
+
+    <!-- Main -->
     <b-container>
         <h1>Edit article</h1>
       <b-row class="d-flex flex-column align-items-center">
-        <b-col style="max-width: 60rem">
+        <b-col class="article-image" >
           <form enctype="multipart/form-data" @submit.prevent="editArticle">
             <!-- Cover image -->
             <b-form-group label="Image cover" class="text-left">
@@ -73,6 +77,7 @@ export default {
       errorMessage: '',
       errorShow: false,
 
+      // Editor options
       editorOption: {
         placeholder: "Please enter your content here",
         modules: {
@@ -94,9 +99,11 @@ export default {
     };
   },
   methods: {
+    // Select a file
     pickFile: function() {
       this.$refs.fileInput.click();
     },
+    // Show selected image
     imageSelected(event) {
       this.image = event.target.files[0];
 
@@ -106,6 +113,7 @@ export default {
         this.imagePreview = event.target.result;
       };
     },
+    // Edit Article
     async editArticle() {
       if(!this.title | !this.content) {
         this.errorMessage = 'Please write a title and a content'
@@ -135,6 +143,7 @@ export default {
       }
     },
   },
+  // Display article to edit
   async mounted() {
     try {
       const response = await axios.get(
@@ -161,6 +170,9 @@ export default {
 <style lang="scss">
 #edit {
   margin-top: 5rem;
+}
+.article-image {
+  max-width: 60rem
 }
 
 .ql-editor {

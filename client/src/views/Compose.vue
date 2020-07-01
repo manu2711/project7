@@ -1,11 +1,14 @@
 <template>
   <div id="compose" class="d-flex flex-column">
+
+    <!-- Header -->
     <Header />
     <b-container id="main" fluid="lg">
       <h1>Write your article</h1>
       <b-row class="d-flex flex-column align-items-center">
-        <b-col style="max-width: 60rem">
+        <b-col class="article-image" >
           <form enctype="multipart/form-data" @submit.prevent="newArticle">
+
             <!-- Cover image -->
             <b-form-group label="Image cover" class="text-left">
               <div v-if="imagePreview">
@@ -72,6 +75,7 @@ export default {
       errorMessage: '',
       errorShow: false,
 
+      // We define the options of text editor
       editorOption: {
         placeholder: "Please enter your content here",
         modules: {
@@ -93,12 +97,15 @@ export default {
     };
   },
   methods: {
+    // Select an image cover
     pickFile: function() {
       this.$refs.fileInput.click();
     },
+    // Check if user is the article owner
     isOwner: function(articleOwner) {
       if (articleOwner == this.userId) return true;
     },
+    // Display selected image
     imageSelected(event) {
       this.image = event.target.files[0];
 
@@ -108,8 +115,7 @@ export default {
         this.imagePreview = event.target.result;
       };
     },
-    // Création de la fonction escapeHTML pour empêcher les injections sql
-
+    // Creation of new article
     async newArticle() {
       if(!this.title | !this.content) {
         this.errorMessage = 'Please write a title and a content'
@@ -117,11 +123,11 @@ export default {
         return
       }
 
-      // Création de la fonction escapeScript pour empêcher les injections script
+      // escapeScript to prevent script injections
       const escapeScript = (text) => {
         return text.replace(/script/g, '&script;')
       }
-
+      // Initialisation of formData
       const formData = new FormData();
       formData.append("cover", this.image);
       formData.append("title", escapeScript(this.title));
@@ -129,11 +135,10 @@ export default {
       formData.append("userId", this.userId);
 
       try {
-        const postResponse = await axios.post(
+        await axios.post(
           "http://localhost:3000/api/articles",
           formData
         );
-        console.log(postResponse);
         this.$router.push("/");
       } catch (error) {
         console.log(error);
@@ -150,6 +155,10 @@ export default {
 
   #main {
     flex: 1;
+
+    .article-image{
+      max-width: 60rem;
+    }
   }
 }
 

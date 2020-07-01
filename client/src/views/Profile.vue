@@ -1,8 +1,10 @@
 <template>
   <div id="profile" class="d-flex flex-column">
+    <!-- Header -->
     <Header />
     <b-container id="main" fluid="lg">
       <b-row class="my-5">
+        <!-- User Avatar -->
         <b-col cols="12" lg="4" class="d-flex justify-content-center">
           <b-card
             :img-src="avatarPreview"
@@ -137,10 +139,11 @@
         <h2>List of all my articles</h2>
       </b-row>
       <b-row>
-        <b-col
-          cols="12"
-        >
-        <p v-if="articles.length==0">You did not publish any articles yet... let's start <router-link to="/compose">composing</router-link> !</p> 
+        <b-col cols="12">
+          <p v-if="articles.length==0">
+            You did not publish any articles yet... let's start
+            <router-link to="/compose">composing</router-link>!
+          </p>
         </b-col>
         <b-col cols="12" class="d-lg-flex flex-row flex-wrap justify-content-around">
           <b-card
@@ -155,8 +158,8 @@
             :key="article.id"
           >
             <b-card-text class="d-flex flex-row justify-content-center">
-              <b-button variant="info" size="sm" :to="editRoute(article.id)">Edit</b-button>
-              <DeleteArticleButton class="ml-3" :articleId="article.id" />
+              <b-button variant="info" size="sm" :to="editLink(article.id)">Edit</b-button>
+              <b-button variant="danger" size="sm" class="ml-2" @click.prevent="deleteArticle(article)">Delete</b-button>
             </b-card-text>
           </b-card>
         </b-col>
@@ -169,10 +172,8 @@
 </template>
 
 <script>
-// @ is an alias to /src
 import Header from "@/components/Header.vue";
 import Footer from "@/components/Footer.vue";
-import DeleteArticleButton from "@/components/DeleteArticleButton.vue";
 import axios from "axios";
 import { validationMixin } from "vuelidate";
 import {
@@ -189,8 +190,7 @@ export default {
   name: "Profile",
   components: {
     Header,
-    Footer,
-    DeleteArticleButton
+    Footer
   },
   mixins: [validationMixin],
   data() {
@@ -207,6 +207,7 @@ export default {
       showPasswordError: false
     };
   },
+  // Input validation
   validations: {
     user: {
       name: {
@@ -241,9 +242,11 @@ export default {
       const { $dirty, $error } = this.$v[name];
       return $dirty ? !$error : null;
     },
+    // Select avatar
     selectAvatar: function() {
       this.$refs.avatarInput.click();
     },
+    // Display avatar image and save it to db
     avatarSelected(event) {
       this.avatar = event.target.files[0];
 
@@ -263,35 +266,37 @@ export default {
         .then(() => console.log("Avatar has changed"))
         .catch(error => console.log(error));
     },
+    // Edit Account
     async editAccount() {
       this.$v.user.$touch();
       if (this.$v.user.$anyError) {
         return;
       }
       try {
-        const response = await axios.put(
+        await axios.put(
           `http://localhost:3000/api/users/account/${this.$store.state.user.id}`,
           {
             name: this.user.name,
             email: this.user.email
           }
         );
-        console.log(response.data);
+        
         this.$bvModal.hide("modal-editAccount");
       } catch (error) {
         console.log(error);
       }
     },
+    // Cancel Edit of modal
     cancelEdit() {
       this.user.name = this.userNameBeforeEdit;
       this.$bvModal.hide("modal-editAccount");
     },
+    // Update Password
     async changePassword() {
       this.$v.$touch();
       if (this.$v.$anyError) {
         return;
       }
-
       try {
         const response = await axios.put(
           `http://localhost:3000/api/users/password/${this.$store.state.user.id}`,
@@ -309,21 +314,35 @@ export default {
         console.log(error);
       }
     },
+    // Delete User
     async deleteUser() {
       try {
         axios.delete(
           `http://localhost:3000/api/users/${this.$store.getters.userId}`
         );
         this.$store.dispatch("logout");
-        this.$router.push("/");
+        this.$router.replace("/login");
       } catch (error) {
         console.log(error);
       }
     },
-    editRoute(id) {
+    async deleteArticle(article) {
+      try {
+        axios
+          .delete(`http://localhost:3000/api/articles/${article.id}`)
+          .then(() => {
+            const indexArticle = this.articles.indexOf(article);
+            this.articles.splice(indexArticle, 1);
+          });
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    editLink(id) {
       return `/edit/${id}`;
     }
   },
+  // Render profile information and articles written by user
   async mounted() {
     try {
       const response = await axios.get(

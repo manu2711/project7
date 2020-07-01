@@ -1,6 +1,8 @@
 <template>
   <div id="home" class="d-flex flex-column">
+    <!-- Header -->
     <Header />
+    <!-- Main -->
     <b-container id="main" fluid="lg">
       <b-row>
         <b-col class="d-flex flex-column align-items-center">
@@ -11,8 +13,7 @@
             :img-src="article.image_url"
             img-top
             tag="article"
-            style="width: 100%; max-width: 50rem"
-            class="my-3"
+            class="article-card my-3"
           >
             <b-card-text :inner-html.prop="article.content | truncate(200)"></b-card-text>
 
@@ -47,10 +48,12 @@ export default {
     };
   },
   methods: {
+    // Return /articles/articleURL
     articleLink: function(articleURL) {
       return `/articles/${articleURL}`;
     }
   },
+  // Render all articles published
   async mounted() {
     try {
       const response = await axios.get(
@@ -69,6 +72,11 @@ export default {
 #home {
   height: 100%;
   margin-top: 5rem;
+
+  .article-card{
+    width: 100%; 
+    max-width: 50rem
+  }
 
   #main {
     flex: 1;
