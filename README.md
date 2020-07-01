@@ -1,5 +1,8 @@
 # Project 7 (Créer un réseau d'entreprise)
 
+## Prerequisites
+Make sure you have installed node.js and npm
+
 ## Installation
 Install and Launch server
 ```
