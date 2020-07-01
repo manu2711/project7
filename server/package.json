@@ -9,7 +9,8 @@
   "author": "ED",
   "license": "ISC",
   "dependencies": {
-    "aws-sdk": "^2.701.0",
+    "@hapi/joi": "^17.1.1",
+    "aws-sdk": "^2.708.0",
     "bcrypt": "^4.0.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
