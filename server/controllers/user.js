@@ -1,5 +1,3 @@
-require('mariadb')
-const pool = require('../db_connect')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const multer = require('multer')
@@ -7,6 +5,7 @@ const sharp = require('sharp')
 const fs = require('fs')
 const aws = require('aws-sdk')
 const validation = require('../middleware/validation')
+const dbQuery = require('../models/users')
 
 aws.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -25,13 +24,9 @@ exports.register = async (req, res) => {
   const avatar =
     'https://manu2711groupomania.s3.eu-west-3.amazonaws.com/avatar/default.png'
   try {
-    // Connection to Database
-    const conn = await pool.getConnection()
-
     // We check if email entered by new user already exists
-    const emailExists = await conn.query(
-      'SELECT * FROM users WHERE email = ?', [req.body.email]
-    )
+    const emailExists = await dbQuery.userByEmail(req.body.email)
+
     if (emailExists[0]) {
       // If email already exists we send back an error message
       return res.status(400).json({ error: 'Email already in use' })
@@ -41,11 +36,8 @@ exports.register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10)
 
     // We insert the new user details into db
-    await conn.query(
-      'INSERT INTO users VALUES (NULL, ?, ?, ?, ?, NULL)', [name, email, hashedPassword, avatar]
-    )
+    await dbQuery.createUser(name, email, hashedPassword, avatar)
     res.status(201).send({ message: `user ${name} has been registered !` })
-    conn.release()
   } catch (error) {
     res.status(500).json({ error })
   }
@@ -54,10 +46,7 @@ exports.register = async (req, res) => {
 // Handle login requests
 exports.login = async (req, res) => {
   try {
-    const conn = await pool.getConnection()
-    const rows = await conn.query(
-      'SELECT * FROM users WHERE email= ?', [req.body.email]
-    )
+    const rows = await dbQuery.login(req.body.email)
 
     // Check if login email exists
     if (rows[0] === null) {
@@ -81,7 +70,6 @@ exports.login = async (req, res) => {
         })
       })
     }
-    conn.release()
   } catch (error) {
     res.status(500).json({ message: 'Username or Password invalid' })
   }
@@ -90,19 +78,11 @@ exports.login = async (req, res) => {
 // Render profile informations
 exports.profile = async (req, res) => {
   try {
-    const userId = req.params.id
-    // Connection to db
-    const conn = await pool.getConnection()
     // we get from db the list of articles pubished by user
-    const articles = await conn.query(
-      'SELECT users.name, articles.* FROM users INNER JOIN articles ON users.id = articles.user_id WHERE articles.user_id= ? ORDER BY articles.date DESC', [userId]
-    )
-      // we retrieve from db user informations
-    const user = await conn.query(
-      'SELECT users.name, users.email, users.avatar_url FROM users WHERE id= ?', [userId]
-    )
+    const articles = await dbQuery.userArticles(req.params.id)
+    // we retrieve from db user informations
+    const user = await dbQuery.userProfile(req.params.id)
     res.status(200).json({ articles, user })
-    conn.release()
   } catch (error) {
     res.status(500).json({ error })
   }
@@ -118,11 +98,10 @@ exports.updateAccount = async (req, res) => {
   try {
     const { name, email } = req.body
     const userId = req.params.id
-    const conn = await pool.getConnection()
-    // we update users information in the db
-    await conn.query('UPDATE users SET name= ?, email= ? WHERE id= ? ', [name, email, userId])
-    conn.release()
-    res.status(200).json({ message: 'Trying to update !' })
+
+    await dbQuery.updateAccount(name, email, userId)
+
+    res.status(200).json({ message: 'Account updated !' })
   } catch (error) {
     res.status(500).json({ error })
   }
@@ -138,15 +117,13 @@ exports.updatePassword = async (req, res) => {
   }
   try {
     const { password, confirmPassword } = req.body
-    console.log(password)
-    console.log(confirmPassword)
     const userId = req.params.id
     if (password && confirmPassword && password === confirmPassword) {
       // We hash the new password and update the db
       const hashedPassword = await bcrypt.hash(password, 10)
-      const conn = await pool.getConnection()
-      await conn.query('UPDATE users SET password= ?  WHERE id= ?', [hashedPassword, userId])
-      conn.release()
+
+      await dbQuery.updatePassword(hashedPassword, userId)
+
       res.status(200).json({ message: 'Password update !' })
     } else res.status(400).json({ message: 'passwords do not match' })
   } catch (error) {
@@ -157,12 +134,13 @@ exports.updatePassword = async (req, res) => {
 // Delete a user
 exports.delete = async (req, res) => {
   try {
-    const id = req.params.id
-    const conn = await pool.getConnection()
+    const userId = req.params.id
+
     // When user deletes account, we affect all is articles to Admnistrator
-    await conn.query("UPDATE articles SET user_id='30' WHERE user_id= ?", [id])
+    await dbQuery.assignToAdmin(userId)
+
     // Then we delete the user from db
-    await conn.query('DELETE FROM users WHERE id= ?', [id])
+    await dbQuery.deleteUser(userId)
     res.status(200).json({ message: 'User deleted' })
   } catch (error) {
     res.status(500).json({ error })
@@ -193,15 +171,11 @@ exports.avatar = [
         })
         .promise()
 
-      const conn = await pool.getConnection()
+      await dbQuery.updateAvatar(s3res.Location, userId)
 
-      await conn.query(
-        'UPDATE users SET avatar_url= ? WHERE id= ?', [s3res.Location, userId]
-      )
-      conn.release()
       // Deletion of temporary iles
-      fs.unlink(req.file.path, () => {
-        res.json({ file: s3res.Location })
+      fs.unlink(req.file.path, error => {
+        if (error) throw error
       })
     } catch (error) {
       res.status(500).json({ error })

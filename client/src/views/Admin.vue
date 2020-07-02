@@ -54,7 +54,7 @@
                   <b-th>{{ user.name }}</b-th>
                   <b-th>{{ user.email }}</b-th>
                   <b-th>
-                    <b-form-checkbox v-model="user.is_admin" name="check-button" aria-label="Change admin rights" switch @input="adminRight(user)">
+                    <b-form-checkbox v-model="user.is_admin" name="check-button" aria-label="Change admin rights" switch @input="adminRight(user)">{{user.is_admin}}
                     </b-form-checkbox>
                   </b-th>
                 </b-tr>
@@ -80,6 +80,12 @@ export default {
   components: {
     Header,
     Footer
+  },
+  metaInfo: {
+    title: 'Groupomania - Administation page',
+    htmlAttrs: {
+        lang: 'en'
+      }
   },
   data() {
     return {

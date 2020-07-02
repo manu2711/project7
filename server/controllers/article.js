@@ -1,23 +1,18 @@
-require('mariadb')
-const pool = require('../db_connect')
 const multer = require('multer')
 const sharp = require('sharp')
 const fs = require('fs')
 const aws = require('aws-sdk')
+const dbQuery = require('../models/articles')
 
 aws.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
 })
 
-// Prevent script tag injection
-const escapeScript = text => {
-  return text.replace(/script/g, '&script;')
-}
-
-// Create a new article
+// Denfine location of temporary file folder
 const upload = multer({ dest: './uploads' })
 
+// Create a new article
 exports.newArticle = [
   upload.single('cover'),
   async (req, res) => {
@@ -40,44 +35,40 @@ exports.newArticle = [
             ACL: 'public-read'
           })
           .promise()
-        // Connection to Database
-        const conn = await pool.getConnection()
 
         // Save new article inside database
-        await conn.query('INSERT INTO articles VALUES (NULL, ?, ?, ?, ?, ?)', [
-          escapeScript(title),
-          escapeScript(content),
+        await dbQuery.createArticle(
+          title,
+          content,
           date,
           userId,
           s3res.Location
-        ])
-        fs.unlink(req.file.path, () => {
-          console.log(s3res.Location)
+        )
+
+        fs.unlink(req.file.path, (error) => {
+          if (error) throw error
         })
         res.status(201).send({
           message: `Thanks for sharing your new article: ${title} ! `
         })
-        conn.release()
       }
       // in case the user did not upload any cover picture, we assign the default one
       if (!req.file) {
         const articleCoverDefault =
           'https://manu2711groupomania.s3.eu-west-3.amazonaws.com/cover/default_cover.png'
-        // Connection to Database
-        const conn = await pool.getConnection()
 
         // Save new article inside database
-        await conn.query('INSERT INTO articles VALUES (NULL, ?, ?, ?, ?, ?)', [
-          escapeScript(title),
-          escapeScript(content),
+        await dbQuery.createArticle(
+          title,
+          content,
           date,
           userId,
           articleCoverDefault
-        ])
+        )
+
         res.status(201).send({
           message: `Thanks for sharing your new article: ${title} ! `
         })
-        conn.release()
       }
     } catch (error) {
       res.status(500).json({ error })
@@ -90,10 +81,8 @@ exports.newArticle = [
 exports.allArticles = async (req, res) => {
   // Connection to db which will return the list of all articles
   try {
-    const conn = await pool.getConnection()
-    const rows = await conn.query('SELECT * FROM articles ORDER BY date DESC')
+    const rows = await dbQuery.allArticles()
     res.status(200).send(rows)
-    conn.end()
   } catch (error) {
     console.log(error)
   }
@@ -101,24 +90,18 @@ exports.allArticles = async (req, res) => {
 
 // Render one article
 exports.oneArticle = async (req, res) => {
+  const articleId = req.params.id
   try {
-    const articleId = req.params.id
-    const conn = await pool.getConnection()
     // We retrieve from db article details
-    const article = await conn.query(
-      'SELECT articles.*, users.name FROM articles INNER JOIN users ON articles.user_id = users.id WHERE articles.id=?',
-      [articleId]
-    )
+    const article = await dbQuery.oneArticle(articleId)
     if (article[0] == null) {
       return res.send({ message: 'There is no article with that id !' })
     }
     // We retrieve from db the comments related to article
-    const comments = await conn.query(
-      'SELECT comments.id, comments.content, users.id AS owner, users.name FROM comments INNER JOIN articles ON comments.article_id = articles.id INNER JOIN users ON comments.user_id = users.id WHERE articles.id=?',
-      [articleId]
-    )
+    const comments = await dbQuery.articleComments(articleId)
+
+    // We send the article details and all related comments
     res.status(200).send({ article, comments })
-    conn.end()
   } catch (error) {
     res.status(500).json({ error })
     console.log(error)
@@ -128,13 +111,8 @@ exports.oneArticle = async (req, res) => {
 // Render article to edit
 exports.articleToEdit = async (req, res) => {
   try {
-    // const articleId = req.params.id
-    const conn = await pool.getConnection()
-    const row = await conn.query('SELECT * FROM articles WHERE id= ?', [
-      req.params.id
-    ])
+    const row = await dbQuery.oneArticle(req.params.id)
     res.status(200).send(row)
-    conn.release()
   } catch (error) {
     res.status(500).json({ error })
     console.log(error)
@@ -164,32 +142,21 @@ exports.editArticle = [
             ACL: 'public-read'
           })
           .promise()
-        // Connection to Database
-        const conn = await pool.getConnection()
 
         // Save new article inside database
-        await conn.query(
-          'UPDATE articles SET title= ?, content= ?, image_url=? WHERE id=?',
-          [escapeScript(title), escapeScript(content), s3res.Location, articleId]
-        )
-        fs.unlink(req.file.path, () => {
-          console.log(s3res.Location)
+        await dbQuery.editArticle(title, content, articleId, s3res.Location)
+
+        fs.unlink(req.file.path, error => {
+          if (error) throw error
         })
-        res.status(201).send({
+        res.status(200).send({
           message: `Thanks for sharing your new article: ${title} ! `
         })
-        conn.release()
       }
       // Else, if the no cover picture uploaded, we leave the previous one
       if (!req.file) {
-        const conn = await pool.getConnection()
-        await conn.query('UPDATE articles SET title=?, content=? WHERE id=?', [
-          escapeScript(title),
-          escapeScript(content),
-          articleId
-        ])
+        await dbQuery.editArticle(title, content, articleId)
         res.status(200).json({ message: 'Your article has been updated !' })
-        conn.release()
       }
     } catch (error) {
       res.status(500).json({ error })
@@ -201,13 +168,8 @@ exports.editArticle = [
 // Delete an article
 exports.deleteArticle = async (req, res) => {
   try {
-    const id = req.params.id
-    // Connection to Database
-    const conn = await pool.getConnection()
-
-    await conn.query('DELETE FROM articles WHERE id = ?', [id])
+    await dbQuery.deleteArticle(req.params.id)
     res.status(200).send({ message: 'Article deleted' })
-    conn.release()
   } catch (error) {
     res.status(500).json({ error })
     console.log(error)
@@ -219,15 +181,8 @@ exports.deleteArticle = async (req, res) => {
 exports.newComment = async (req, res) => {
   try {
     const { articleId, userId, content } = req.body
-    console.log(articleId, userId, content)
-    const conn = await pool.getConnection()
-    await conn.query('INSERT INTO comments VALUES(NULL, ?, ?, ?, NULL)', [
-      articleId,
-      userId,
-      escapeScript(content)
-    ])
+    await dbQuery.addComment(articleId, userId, content)
     res.status(201).json({ message: 'Thanks for your comment !' })
-    conn.release()
   } catch (error) {
     res.status(500).json({ error })
     console.log(error)
@@ -236,12 +191,9 @@ exports.newComment = async (req, res) => {
 
 // Deletion of comments
 exports.deleteComment = async (req, res) => {
-  const articleId = req.params.id
   try {
-    const conn = await pool.getConnection()
-    conn.query('DELETE FROM comments WHERE id = ?', [articleId])
-    conn.release()
-    res.send('Comments deleted')
+    dbQuery.deleteComment(req.params.id)
+    res.status(200).send('Comments deleted')
   } catch (error) {
     res.status(500).json({ error })
   }

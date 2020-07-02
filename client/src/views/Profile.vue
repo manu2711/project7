@@ -200,6 +200,12 @@ export default {
     Header,
     Footer
   },
+  metaInfo: {
+    title: 'Groupomania - Your profile',
+    htmlAttrs: {
+        lang: 'en'
+      }
+  },
   mixins: [validationMixin],
   data() {
     return {
