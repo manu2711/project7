@@ -12,7 +12,7 @@
             <!-- Cover image -->
             <b-form-group label="Image cover" class="text-left">
               <div v-if="imagePreview">
-                <img :src="imagePreview" class="figure-img img-fluid" alt="Profile picture" />
+                <img :src="imagePreview" class="figure-img img-fluid" alt="Article cover image" />
               </div>
 
               <b-button variant="primary" @click="pickFile">Upload image cover</b-button>
@@ -21,28 +21,30 @@
                 @change="imageSelected"
                 class="custom-file-input"
                 id="customFile"
+                aria-label="Upload image cover"
                 style="display: none"
                 ref="fileInput"
               />
             </b-form-group>
 
             <!-- Title -->
-            <b-form-group label="Title" class="text-left">
+            <b-form-group label="Title" label-for="title" class="text-left">
               <b-form-input
                 v-model="title"
                 type="text"
+                id="title"
                 name="title"
                 placeholder="Give your article a nice title here..."
                 class="my-2"
               ></b-form-input>
             </b-form-group>
 
-            <b-form-group label="Content" class="text-left">
+            <b-form-group label="Content" label-for="content" class="text-left">
               <!-- Implemet QUill Editor -->
-              <quill-editor ref="myQuillEditor" v-model="content" :options="editorOption"></quill-editor>
+              <quill-editor ref="myQuillEditor" id="content" v-model="content" :options="editorOption"></quill-editor>
             </b-form-group>
             <b-alert variant="danger" :show="errorShow">{{ errorMessage }}</b-alert>
-            <b-button class="mt-2" type="submit" variant="info">Create my article !</b-button>
+            <b-button class="mt-2" type="submit" variant="info" aria-label="Create my article">Create my article !</b-button>
           </form>
         </b-col>
       </b-row>

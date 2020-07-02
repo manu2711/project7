@@ -8,14 +8,14 @@
         <b-col cols="12" lg="4" class="d-flex justify-content-center">
           <b-card
             :img-src="avatarPreview"
-            img-alt="Card image"
+            img-alt="User Avatar image"
             img-top
             class="m-0 avatar"
             style="width: 100%; max-width: 16rem"
           >
             <form enctype="multipart/form-data">
               <input type="file" style="display:none" ref="avatarInput" @change="avatarSelected" />
-              <b-button variant="outline-info" @click="selectAvatar">Change Avatar</b-button>
+              <b-button variant="outline-info" aria-label="Change avatar" @click="selectAvatar">Change Avatar</b-button>
             </form>
           </b-card>
         </b-col>
@@ -28,10 +28,10 @@
             <h1>{{user.name}}</h1>
           </b-row>
           <b-row>
-            <b-dropdown text="Manage Account" variant="info">
-              <b-dropdown-item v-b-modal.modal-editAccount>Edit Account</b-dropdown-item>
-              <b-dropdown-item v-b-modal.modal-changePassword>Change Password</b-dropdown-item>
-              <b-dropdown-item v-b-modal.modal-deleteAccount>Delete Account</b-dropdown-item>
+            <b-dropdown text="Manage Account" aria-label="Manage account" variant="info">
+              <b-dropdown-item v-b-modal.modal-editAccount aria-label="Edit Account">Edit Account</b-dropdown-item>
+              <b-dropdown-item v-b-modal.modal-changePassword aria-label="Chamge Password">Change Password</b-dropdown-item>
+              <b-dropdown-item v-b-modal.modal-deleteAccount aria-label="Delete Account">Delete Account</b-dropdown-item>
             </b-dropdown>
 
             <!-- Edit Account Modal -->
@@ -43,7 +43,9 @@
             >
               <template>
                 <b-form>
-                  <b-form-group id="name-group">
+                  <b-form-group id="name-group"
+                  label="Name:"
+                  label-for="name">
                     <b-form-input
                       id="name"
                       name="name"
@@ -56,7 +58,9 @@
                     <b-form-invalid-feedback>Name is required and must be a least 3 characters</b-form-invalid-feedback>
                   </b-form-group>
 
-                  <b-form-group id="email-group">
+                  <b-form-group id="email-group"
+                  label="Email"
+                  label-for="email">
                     <b-form-input
                       id="email"
                       name="email"
@@ -69,8 +73,8 @@
                     <b-form-invalid-feedback>Email is required and must be valid</b-form-invalid-feedback>
                   </b-form-group>
                 </b-form>
-                <b-button type="button" @click="cancelEdit()">Cancel</b-button>
-                <b-button variant="info" class="ml-3" @click="editAccount()">Update</b-button>
+                <b-button type="button" aria-label="Cancel" @click="cancelEdit()">Cancel</b-button>
+                <b-button variant="info" aria-label="Update" class="ml-3" @click="editAccount()">Update</b-button>
               </template>
             </b-modal>
 
@@ -83,7 +87,9 @@
             >
               <template v-slot:default="{ cancel }">
                 <b-form>
-                  <b-form-group id="password-group">
+                  <b-form-group id="password-group"
+                  label="New password"
+                  label-for="password">
                     <b-form-input
                       id="password"
                       name="password"
@@ -96,7 +102,9 @@
                     <b-form-invalid-feedback>Password is required and must at least 8 characters (special charaters allowed: @/+*!%&.)</b-form-invalid-feedback>
                   </b-form-group>
 
-                  <b-form-group id="confirm-password-group">
+                  <b-form-group id="confirm-password-group"
+                  label="Confirm Password"
+                  label-for="confirm-password">
                     <b-form-input
                       id="confirm-password"
                       name="confirm-password"
@@ -110,8 +118,8 @@
                   </b-form-group>
                 </b-form>
                 <b-alert :show="showPasswordError" variant="danger">{{ passwordError }}</b-alert>
-                <b-button type="button" @click="cancel()">Cancel</b-button>
-                <b-button variant="info" class="ml-3" @click="changePassword()">Change</b-button>
+                <b-button type="button" aria-label="Cancel" @click="cancel()">Cancel</b-button>
+                <b-button variant="info" aria-label="Change password" class="ml-3" @click="changePassword()">Change</b-button>
               </template>
             </b-modal>
 
@@ -126,8 +134,8 @@
             >
               <template v-slot:default="{ cancel }">
                 <p>Are you sure you want to delete your account ?</p>
-                <b-button type="button" @click="cancel()">Cancel</b-button>
-                <b-button variant="danger" class="ml-3" @click="deleteUser()">Yes, delete</b-button>
+                <b-button type="button" aria-label="Cancel" @click="cancel()">Cancel</b-button>
+                <b-button variant="danger" aria-label="Delete user" class="ml-3" @click="deleteUser()">Yes, delete</b-button>
               </template>
             </b-modal>
           </b-row>
@@ -158,8 +166,8 @@
             :key="article.id"
           >
             <b-card-text class="d-flex flex-row justify-content-center">
-              <b-button variant="info" size="sm" :to="editLink(article.id)">Edit</b-button>
-              <b-button variant="danger" size="sm" class="ml-2" @click.prevent="deleteArticle(article)">Delete</b-button>
+              <b-button variant="info" size="sm" aria-label="Edit article" :to="editLink(article.id)">Edit</b-button>
+              <b-button variant="danger" size="sm" aria-label="Delete article" class="ml-2" @click.prevent="deleteArticle(article)">Delete</b-button>
             </b-card-text>
           </b-card>
         </b-col>

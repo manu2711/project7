@@ -10,8 +10,10 @@
       <b-row class="w-100 d-flex flex-column justify-content-center align-items-center mt-5">
           <!-- Register Form -->
           <h1>Register</h1>
-          <b-form id="registerForm" class="mt-5" @submit.prevent="register">
-            <b-form-group>
+          <b-form id="registerForm" class="mt-5 text-left" @submit.prevent="register">
+            <b-form-group
+            label="Name:"
+            label-for="name">
               <b-form-input
                 id="name"
                 name="name"
@@ -23,7 +25,9 @@
               <b-form-invalid-feedback>Name is required and must be a least 3 characters</b-form-invalid-feedback>
             </b-form-group>
 
-            <b-form-group>
+            <b-form-group
+            label="Email:"
+            label-for="email">
               <b-form-input
                 id="email"
                 name="email"
@@ -35,7 +39,9 @@
               <b-form-invalid-feedback>Email is required and must be valid</b-form-invalid-feedback>
             </b-form-group>
 
-            <b-form-group id="password-group">
+            <b-form-group id="password-group"
+            label="Password:"
+            label-for="password">
               <b-form-input
                 id="password"
                 name="password"
@@ -47,7 +53,9 @@
               <b-form-invalid-feedback>Password is required and must at least 8 characters (special charaters allowed: @/+*!%&.)</b-form-invalid-feedback>
             </b-form-group>
 
-            <b-form-group id="confirm-password-group">
+            <b-form-group id="confirm-password-group"
+            label="Confirm Password:"
+            label-for="confirmPassword">
               <b-form-input
                 id="confirmPassword"
                 name="confirmPassword"
@@ -62,9 +70,9 @@
             <!-- Error message alert -->
             <b-alert :show="errorShow" variant="danger">{{ errorMessage }}</b-alert>
 
-            <b-button type="submit" variant="primary">Register</b-button>
+            <b-button type="submit" variant="primary" aria-label="Register">Register</b-button>
           </b-form>
-          <p class="mt-2">You already have account ? <router-link to="/login">Login</router-link></p>
+          <p class="mt-2">You already have account ? <router-link to="/login" aria-label="Login">Login</router-link></p>
         
       </b-row>
     </b-container>

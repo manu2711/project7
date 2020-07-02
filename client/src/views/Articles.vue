@@ -24,6 +24,7 @@
               href="#"
               size="sm"
               variant="primary"
+              aria-label="Edit Article"
               :to="editRoute(article.id)"
             >Edit</b-button>
             <b-button
@@ -32,6 +33,7 @@
               size="sm"
               variant="danger"
               class="ml-3"
+              aria-label="Delete Article"
               @click.prevent="deleteArticle(article.id)"
             >Delete</b-button>
           </b-card>
@@ -48,6 +50,7 @@
               v-if="isOwner(comment.owner)"
               variant="danger"
               size="sm"
+              aria-label="Delete Comment"
               @click.prevent="deleteComment(comment)"
             >Delete comment</b-button>
           </b-card>
@@ -69,6 +72,7 @@
             @click.prevent="postComment(article.id)"
             variant="info"
             class="mt-2"
+            aria-label="Comment"
           >Comment !</b-button>
         </b-col>
       </b-row>
