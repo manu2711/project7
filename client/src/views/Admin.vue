@@ -28,7 +28,7 @@
                      </b-th>
                   <b-th>{{ article.name }}</b-th>
                   <b-th>
-                    <b-button variant="danger" size="sm" @click.prevent="deleteArticle(article)">Delete</b-button>
+                    <b-button variant="danger" size="sm" aria-label="Delete article" @click.prevent="deleteArticle(article)">Delete</b-button>
                   </b-th>
                 </b-tr>
               </b-tbody>
@@ -54,7 +54,7 @@
                   <b-th>{{ user.name }}</b-th>
                   <b-th>{{ user.email }}</b-th>
                   <b-th>
-                    <b-form-checkbox v-model="user.is_admin" name="check-button" switch @input="adminRight(user)">
+                    <b-form-checkbox v-model="user.is_admin" name="check-button" aria-label="Change admin rights" switch @input="adminRight(user)">
                     </b-form-checkbox>
                   </b-th>
                 </b-tr>

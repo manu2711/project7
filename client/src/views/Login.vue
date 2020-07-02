@@ -10,8 +10,10 @@
       <b-row class="w-100 d-flex flex-column justify-content-center align-items-center mt-5">
         <!-- Login Form -->
           <h1>Login</h1>
-          <b-form id="loginForm" class="mt-5" @submit.prevent="login">
-            <b-form-group>
+          <b-form id="loginForm" class="mt-5 text-left" @submit.prevent="login">
+            <b-form-group
+            label="Email address:"
+            label-for="email">
               <b-form-input
                 id="email"
                 name="email"
@@ -23,7 +25,9 @@
               <b-form-invalid-feedback>You must enter a valid Email</b-form-invalid-feedback>
             </b-form-group>
 
-            <b-form-group id="password-group">
+            <b-form-group id="password-group"
+            label="Password:"
+            label-for="password">
               <b-form-input
                 id="password"
                 name="password"
@@ -39,9 +43,9 @@
             <!-- Error message alert -->
             <b-alert :show="errorShow" variant="danger">{{ errorMessage }}</b-alert>
 
-            <b-button type="submit" variant="primary">Login</b-button>
+            <b-button type="submit" aria-label="Login" variant="primary">Login</b-button>
           </b-form>
-          <p class="mt-2">Not a member yet ? <router-link to="/register">Register</router-link></p>
+          <p class="mt-2">Not a member yet ? <router-link to="/register" aria-label="Register">Register</router-link></p>
         
       </b-row>
       

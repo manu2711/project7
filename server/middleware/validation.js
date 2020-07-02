@@ -37,6 +37,10 @@ exports.updatePassword = function updatePasswordValidation (data) {
     password: Joi.string()
       .min(8)
       .required()
+      .pattern(new RegExp('^[a-zA-Z0-9-@/+*!%&.]*$')),
+    confirmPassword: Joi.string()
+      .min(8)
+      .required()
       .pattern(new RegExp('^[a-zA-Z0-9-@/+*!%&.]*$'))
   })
   return schema.validate(data)

@@ -17,7 +17,7 @@
           >
             <b-card-text :inner-html.prop="article.content | truncate(200)"></b-card-text>
 
-            <b-button :to="articleLink(article.id)" variant="primary">More</b-button>
+            <b-button :to="articleLink(article.id)" variant="primary" aria-label="Read More">More</b-button>
           </b-card>
         </b-col>
       </b-row>

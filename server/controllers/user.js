@@ -130,6 +130,7 @@ exports.updateAccount = async (req, res) => {
 
 // Update user password
 exports.updatePassword = async (req, res) => {
+  console.log(req.body)
   // We check if passwords match the requirements
   const { error } = validation.updatePassword(req.body)
   if (error) {
@@ -137,6 +138,8 @@ exports.updatePassword = async (req, res) => {
   }
   try {
     const { password, confirmPassword } = req.body
+    console.log(password)
+    console.log(confirmPassword)
     const userId = req.params.id
     if (password && confirmPassword && password === confirmPassword) {
       // We hash the new password and update the db

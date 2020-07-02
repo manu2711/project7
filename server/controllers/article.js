@@ -169,7 +169,7 @@ exports.editArticle = [
 
         // Save new article inside database
         await conn.query(
-          'UPDATE articles SET title= ?, content= ?, image_url= WHERE id=',
+          'UPDATE articles SET title= ?, content= ?, image_url=? WHERE id=?',
           [escapeScript(title), escapeScript(content), s3res.Location, articleId]
         )
         fs.unlink(req.file.path, () => {
