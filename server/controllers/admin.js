@@ -22,7 +22,7 @@ exports.adminRights = async (req, res) => {
     const { userId, adminRight } = req.body
 
     const conn = await pool.getConnection()
-    await conn.query('UPDATE users SET is_admin= ? WHERE id = ?', [adminRight, userId])
+    await conn.query('UPDATE users SET is_admin= ? WHERE id = ?', [`${adminRight}`, userId])
 
     res.status(200).json({ message: 'User rights have been updated' })
     conn.end()
