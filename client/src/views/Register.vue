@@ -93,6 +93,12 @@ export default {
   components: {
     Footer
   },
+  metaInfo: {
+    title: 'Groupomania - Registration page',
+    htmlAttrs: {
+        lang: 'en'
+      }
+  },
   mixins: [validationMixin],
   data() {
     return {

@@ -40,6 +40,12 @@ export default {
     Header,
     Footer
   },
+  metaInfo: {
+    title: 'Groupomania - Home page',
+    htmlAttrs: {
+        lang: 'en'
+      }
+  },
   data() {
     return {
       articles: [],

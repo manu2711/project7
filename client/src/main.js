@@ -7,6 +7,7 @@ import router from './router'
 import store from './store'
 import VueQuillEditor from 'vue-quill-editor'
 import Vuelidate from 'vuelidate'
+import VueMeta from 'vue-meta'
 
 import '../node_modules/bootstrap/dist/css/bootstrap.css'
 import '../node_modules/bootstrap-vue/dist/bootstrap-vue.css'
@@ -21,6 +22,9 @@ Vue.use(VueAxios, Axios)
 Vue.use(VueTruncate)
 Vue.use(VueQuillEditor)
 Vue.use(Vuelidate)
+Vue.use(VueMeta, {
+  refreshOnceOnNavigation: true
+})
 
 Vue.config.productionTip = false
 

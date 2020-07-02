@@ -67,6 +67,12 @@ export default {
     Header,
     Footer
   },
+  metaInfo: {
+    title: 'Groupomania - Write your article !',
+    htmlAttrs: {
+        lang: 'en'
+      }
+  },
   data() {
     return {
       title: "",

@@ -81,6 +81,12 @@ export default {
     Header,
     Footer
   },
+  metaInfo: {
+    title: 'Groupomania - Administation page',
+    htmlAttrs: {
+        lang: 'en'
+      }
+  },
   data() {
     return {
       users: [],
