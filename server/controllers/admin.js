@@ -1,6 +1,5 @@
 const dbQuery = require('../models/admin')
 
-
 // Render all articles and all users
 exports.all = async (req, res) => {
   // Connection to db which will return the list of all articles

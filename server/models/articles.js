@@ -98,3 +98,37 @@ exports.deleteComment = async articleId => {
   conn.release()
   return result
 }
+
+// Render Like number
+exports.likeNumber = async (articleId) => {
+  const conn = await pool.getConnection()
+  const result = conn.query(
+    'SELECT COUNT(*) AS number FROM likes INNER JOIN articles ON likes.article_id = articles.id WHERE articles.id = ?', [articleId]
+  )
+  conn.release()
+  return result
+}
+
+// Add Like
+exports.addLike = async (articleId, userId) => {
+  const conn = await pool.getConnection()
+  const result = conn.query('INSERT INTO likes VALUES(NULL, ?,?)', [articleId, userId])
+  conn.release()
+  return result
+}
+
+// Delete Like
+exports.deleteLike = async (likeId) => {
+  const conn = await pool.getConnection()
+  const result = conn.query('DELETE FROM likes WHERE id = ?', [likeId])
+  conn.release()
+  return result
+}
+
+// Check if user liked an article
+exports.userHasLiked = async (articleId, userId) => {
+  const conn = await pool.getConnection()
+  const result = conn.query('SELECT id FROM likes WHERE article_id = ? AND user_id = ?', [articleId, userId])
+  conn.release()
+  return result
+}

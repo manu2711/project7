@@ -91,6 +91,7 @@ exports.allArticles = async (req, res) => {
 // Render one article
 exports.oneArticle = async (req, res) => {
   const articleId = req.params.id
+  const userId = req.params.userId
   try {
     // We retrieve from db article details
     const article = await dbQuery.oneArticle(articleId)
@@ -100,8 +101,14 @@ exports.oneArticle = async (req, res) => {
     // We retrieve from db the comments related to article
     const comments = await dbQuery.articleComments(articleId)
 
+    // We retrieve from db the number of likes
+    const likes = await dbQuery.likeNumber(articleId)
+
+    // We check if user has liked this article previously
+    const userHasLiked = await dbQuery.userHasLiked(articleId, userId)
+
     // We send the article details and all related comments
-    res.status(200).send({ article, comments })
+    res.status(200).send({ article, comments, likes, userHasLiked })
   } catch (error) {
     res.status(500).json({ error })
     console.log(error)
@@ -196,5 +203,29 @@ exports.deleteComment = async (req, res) => {
     res.status(200).send('Comments deleted')
   } catch (error) {
     res.status(500).json({ error })
+  }
+}
+
+/* Likes management */
+// When user Liked
+exports.addLike = async (req, res) => {
+  try {
+    const { articleId, userId } = req.body
+    const result = await dbQuery.addLike(articleId, userId)
+    res.status(201).json({ likeId: result.insertId, message: 'Thanks for your feedback !' })
+  } catch (error) {
+    res.status(500).json({ error })
+    console.log(error)
+  }
+}
+
+// When user cancelled his like
+exports.deleteLike = async (req, res) => {
+  try {
+    await dbQuery.deleteLike(req.params.id)
+    res.status(201).json({ message: 'Thanks for your feedback !' })
+  } catch (error) {
+    res.status(500).json({ error })
+    console.log(error)
   }
 }

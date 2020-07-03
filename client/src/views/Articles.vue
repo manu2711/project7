@@ -7,7 +7,7 @@
     <b-container id="main" fluid="lg">
       <!-- We display the article  -->
       <b-row>
-        <b-col class="d-flex justify-content-center">
+        <b-col cols="12" class="d-flex justify-content-center">
           <b-card
             :img-src="article.image_url"
             img-alt="Image"
@@ -36,6 +36,11 @@
               aria-label="Delete Article"
               @click.prevent="deleteArticle(article.id)"
             >Delete</b-button>
+
+            <!-- Like button -->
+            <b-row class="d-flex justify-content-center mt-3">
+              <button :class="{ liked: userLiked }" class="like-button" @click.prevent="like()"><i class="fas fa-thumbs-up"></i> Like ({{ likesNumber }}) </button>
+            </b-row>
           </b-card>
         </b-col>
       </b-row>
@@ -107,7 +112,10 @@ export default {
     return {
       article: "",
       comment: "",
-      comments: ""
+      comments: "",
+      userLiked: false,
+      likesNumber: '',
+      likeId: ''
     };
   },
   methods: {
@@ -167,16 +175,46 @@ export default {
       } catch (error) {
         console.log(error);
       }
+    },
+    // Likes
+    like: async function() {
+      try {
+        // If user likes the articles
+        if (this.userLiked === false) {
+          const response = await axios.post('http://localhost:3000/api/articles/likes', {
+            articleId: this.article.id,
+            userId: this.$store.state.user.id
+          })
+          this.userLiked = true
+          this.likesNumber += 1
+          this.likeId = response.data.likeId
+        }
+
+        // If user does not like the article anymore
+        else if (this.userLiked === true) {
+          const likeId = this.likeId
+          await axios.delete(`http://localhost:3000/api/articles/likes/${likeId}`)
+          this.userLiked = false
+          this.likesNumber -= 1
+          console.log('unliked !')
+        }
+
+      } catch (error) {console.log(error)}
     }
   },
   // Display article and related comments
   async mounted() {
+    const userId = this.$store.state.user.id
     try {
-      const response = await axios.get(
-        `http://localhost:3000/api/articles/${this.$route.params.id}`
-      );
+      const response = await axios.get(`http://localhost:3000/api/articles/${this.$route.params.id}/${userId}`)
       this.article = response.data.article[0];
       this.comments = response.data.comments;
+      this.likesNumber = response.data.likes[0].number
+      if (response.data.userHasLiked[0]) { 
+        this.userLiked = true
+        this.likeId = response.data.userHasLiked[0].id
+      }
+      
     } catch (error) {
       console.log(error);
     }
@@ -197,6 +235,23 @@ export default {
     display: flex;
     flex-direction: column;
     justify-content: center;
+
+    .like-button {
+      background-color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 1.2rem;
+      color: grey;
+      padding: 6px;
+
+      &:hover{
+        background-color: lightgrey;
+      }
+    }
+
+    .liked {
+      color: #0275d8 !important;
+    }
 
     img {
       width: 100%;
